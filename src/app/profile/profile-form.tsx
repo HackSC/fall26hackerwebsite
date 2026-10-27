@@ -1,22 +1,60 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useActionState, type ReactNode } from "react";
+import { startTransition, useActionState, useState, type ReactNode } from "react";
 import type { Profile } from "@/lib/database.types";
 import { LANGUAGES, ROLES, TEAM_SIZES, TEAM_STATUSES, USC_YEARS } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/client";
+import { Avatar } from "../avatar";
 import { saveProfile, type ProfileFormState } from "./actions";
+
+const AVATAR_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" } as const;
+const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 
 export function ProfileForm({
   profile,
+  userId,
   defaultEmail,
 }: {
   profile: Profile | null;
+  userId: string;
   defaultEmail: string;
 }) {
   const [state, action, pending] = useActionState<ProfileFormState, FormData>(saveProfile, {
     status: "idle",
   });
   const errors = state.fieldErrors ?? {};
+
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  function pickAvatar(file: File | undefined) {
+    setAvatarError(null);
+    if (!file) return;
+    if (!(file.type in AVATAR_TYPES)) return setAvatarError("Use a PNG, JPG, or WebP image.");
+    if (file.size > AVATAR_MAX_BYTES) return setAvatarError("Image must be 2 MB or smaller.");
+    if (preview) URL.revokeObjectURL(preview);
+    setAvatarFile(file);
+    setPreview(URL.createObjectURL(file));
+  }
+
+  /** Upload the chosen photo to Storage and return its public URL. */
+  async function uploadAvatar(file: File) {
+    const supabase = createClient();
+    const ext = AVATAR_TYPES[file.type as keyof typeof AVATAR_TYPES];
+    const path = `${userId}/avatar-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("avatars").upload(path, file, {
+      contentType: file.type,
+    });
+    if (error) throw error;
+    // Drop older photos so the folder doesn't grow with every change.
+    const { data: old } = await supabase.storage.from("avatars").list(userId);
+    const stale = (old ?? []).map((f) => `${userId}/${f.name}`).filter((p) => p !== path);
+    if (stale.length) await supabase.storage.from("avatars").remove(stale);
+    return supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+  }
 
   const known = new Set<string>(LANGUAGES);
   const otherLanguages = (profile?.languages ?? []).filter((l) => !known.has(l)).join(", ");
@@ -25,14 +63,47 @@ export function ProfileForm({
     <form
       // Submitting through a transition (instead of `action={action}`) stops
       // React from resetting the form, so edits survive a validation error.
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
+        if (avatarFile) {
+          setUploading(true);
+          try {
+            formData.set("avatar_url", await uploadAvatar(avatarFile));
+            setAvatarFile(null);
+          } catch (err) {
+            const reason = err instanceof Error ? err.message : "unknown error";
+            setAvatarError(`Couldn't upload your photo: ${reason}`);
+            return;
+          } finally {
+            setUploading(false);
+          }
+        }
         startTransition(() => action(formData));
       }}
       className="mt-6 space-y-6"
     >
       <Section title="About you">
+        <div className="flex items-center gap-4">
+          <Avatar
+            url={preview ?? profile?.avatar_url}
+            name={profile?.name}
+            className="size-20 text-2xl"
+          />
+          <div>
+            <label className="btn-ghost cursor-pointer">
+              {profile?.avatar_url || preview ? "Change photo" : "Upload photo"}
+              <input
+                type="file"
+                accept={Object.keys(AVATAR_TYPES).join(",")}
+                onChange={(e) => pickAvatar(e.target.files?.[0])}
+                className="sr-only"
+              />
+            </label>
+            <p className="mt-1.5 text-xs text-muted">PNG, JPG, or WebP, up to 2 MB. Optional.</p>
+            {avatarError && <p className="mt-1 text-sm text-accent">{avatarError}</p>}
+          </div>
+        </div>
         <Field label="Name" error={errors.name}>
           <input name="name" required defaultValue={profile?.name} className="input" />
         </Field>
@@ -180,8 +251,8 @@ export function ProfileForm({
       </Section>
 
       <div className="flex items-center gap-4">
-        <button type="submit" className="btn" disabled={pending}>
-          {pending ? "Saving…" : profile ? "Save changes" : "Create profile"}
+        <button type="submit" className="btn" disabled={pending || uploading}>
+          {pending || uploading ? "Saving…" : profile ? "Save changes" : "Create profile"}
         </button>
         {state.status === "saved" && (
           <p className="text-sm">
