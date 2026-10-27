@@ -6,14 +6,16 @@ import { ProfileForm } from "./profile-form";
 
 export default function ProfilePage() {
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-semibold tracking-tight">Your profile</h1>
-      <p className="mt-1 text-sm text-muted">
-        Visible to other signed-in hackers on the People page so you can form teams.
-      </p>
-      <Suspense fallback={<div className="card mt-6 h-96 animate-pulse" />}>
-        <ProfileEditor />
-      </Suspense>
+    <div className="wrap pt-10 sm:pt-16">
+      <div className="max-w-3xl">
+        <h1 className="display rise text-title">Your profile</h1>
+        <p className="rise mt-4 text-lead text-muted" style={{ "--i": 1 } as React.CSSProperties}>
+          Other signed-in hackers see this on the People page, so they know what you build and how to reach you.
+        </p>
+        <Suspense fallback={<div className="skeleton mt-10 h-96" />}>
+          <ProfileEditor />
+        </Suspense>
+      </div>
     </div>
   );
 }

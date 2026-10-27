@@ -19,7 +19,7 @@ export function FilterBar({ filters }: { filters: PeopleFilters }) {
       onChange={(e) => {
         if (e.target instanceof HTMLSelectElement) e.currentTarget.requestSubmit();
       }}
-      className="card mt-6 space-y-3"
+      className="mt-10 space-y-3 bg-surface p-4 sm:p-5"
     >
       <div className="flex gap-2">
         <input
@@ -75,7 +75,7 @@ export function FilterBar({ filters }: { filters: PeopleFilters }) {
       </div>
 
       {active && (
-        <Link href="/people" className="inline-block text-sm text-accent underline">
+        <Link href="/people" className="link inline-block">
           Clear filters
         </Link>
       )}

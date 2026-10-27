@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { EventRow } from "@/lib/database.types";
+import type { EventKind, EventRow } from "@/lib/database.types";
 import { EVENT_KIND_LABELS, EVENT_TIME_ZONE } from "@/lib/constants";
+import { countdownParts, eventStatus, getLiveState, relativeTime, startMs } from "@/lib/schedule";
 
 // The current time is only known in the browser, so everything time-relative
 // (countdown, "up next", highlighting) is computed here and ticks every second.
 function useNow() {
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
-    // Set immediately on mount, then tick every second.
     const tick = () => setNow(Date.now());
     tick();
     const id = setInterval(tick, 1000);
@@ -17,11 +17,6 @@ function useNow() {
   }, []);
   return now;
 }
-
-const start = (e: EventRow) => new Date(e.starts_at).getTime();
-const end = (e: EventRow) => (e.ends_at ? new Date(e.ends_at).getTime() : start(e));
-const isFood = (e: EventRow) => e.kind === "meal" || e.kind === "treat";
-const isActivity = (e: EventRow) => e.kind === "event" || e.kind === "workshop";
 
 const timeFmt = new Intl.DateTimeFormat("en-US", {
   timeZone: EVENT_TIME_ZONE,
@@ -40,129 +35,141 @@ function formatRange(e: EventRow) {
   return e.ends_at ? `${s} – ${timeFmt.format(new Date(e.ends_at))}` : s;
 }
 
+const TAG_BG: Record<EventKind, string> = {
+  event: "var(--tag-event)",
+  workshop: "var(--tag-workshop)",
+  meal: "var(--tag-food)",
+  treat: "var(--tag-food)",
+  deadline: "var(--tag-deadline)",
+};
+
+function KindTag({ kind }: { kind: EventKind }) {
+  return (
+    <span className={`tag text-on-tag ${kind === "event" ? "tag-event" : ""}`} style={{ background: TAG_BG[kind] }}>
+      {EVENT_KIND_LABELS[kind]}
+    </span>
+  );
+}
+
 export function Dashboard({ events }: { events: EventRow[] }) {
   const now = useNow();
-
-  const deadline = now === null ? undefined : events.find((e) => e.kind === "deadline" && start(e) > now);
-  const pastDeadline = now !== null && !deadline && events.some((e) => e.kind === "deadline");
-  const happeningNow =
-    now === null ? [] : events.filter((e) => isActivity(e) && start(e) <= now && now < end(e));
-  const nextEvent = now === null ? undefined : events.find((e) => isActivity(e) && start(e) > now);
-  const nextFood = now === null ? undefined : events.find((e) => isFood(e) && end(e) > now);
+  const live = now === null ? null : getLiveState(events, now);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-      <div className="space-y-6">
-        <section className="card bg-accent text-accent-foreground border-transparent">
-          <p className="text-sm uppercase tracking-widest opacity-80">
-            {pastDeadline ? "Submissions" : "Submissions close in"}
-          </p>
-          {now === null ? (
-            <div className="mt-3 h-16 w-3/4 animate-pulse rounded-lg bg-white/15" />
-          ) : deadline ? (
+    <>
+      <section aria-labelledby="countdown-heading" className="bg-field text-on-field">
+        <div className="wrap pt-10 pb-12 sm:pt-16 sm:pb-20">
+          <h1 id="countdown-heading" className="rise text-lead font-semibold">
+            HackSC Fall &apos;26 · {live?.pastDeadline ? "Submissions" : "Submissions close in"}
+          </h1>
+          {!live ? (
+            <div className="mt-4 h-[0.86em] w-3/4 text-monument" aria-hidden="true">
+              <div className="h-full bg-on-field/10" />
+            </div>
+          ) : live.deadline ? (
             <>
-              <Countdown ms={start(deadline) - now} />
-              <p className="mt-2 text-sm opacity-80">
-                {deadline.title} · {dayFmt.format(new Date(deadline.starts_at))},{" "}
-                {timeFmt.format(new Date(deadline.starts_at))}
+              <Countdown ms={startMs(live.deadline) - now!} />
+              <p className="rise mt-6 text-lead font-semibold" style={{ "--i": 2 } as React.CSSProperties}>
+                {live.deadline.title}, {dayFmt.format(new Date(live.deadline.starts_at))} at{" "}
+                {timeFmt.format(new Date(live.deadline.starts_at))}
               </p>
             </>
           ) : (
-            <p className="mt-2 text-4xl font-semibold">
-              {pastDeadline ? "Closed — good luck!" : "No deadline posted yet"}
+            <p className="display rise mt-4 text-title">
+              {live.pastDeadline ? "Closed. Good luck, hackers." : "No deadline posted yet."}
             </p>
           )}
-        </section>
-
-        <div className="grid gap-6 sm:grid-cols-2">
-          <section className="card">
-            <h2 className="text-sm font-medium uppercase tracking-widest text-muted">Next event</h2>
-            {now === null ? (
-              <CardSkeleton />
-            ) : nextEvent ? (
-              <EventSummary event={nextEvent} now={now} />
-            ) : (
-              <p className="mt-3 text-muted">Nothing else on the schedule.</p>
-            )}
-            {happeningNow.length > 0 && (
-              <div className="mt-4 border-t border-border pt-3 text-sm">
-                <span className="font-medium text-accent">Happening now: </span>
-                {happeningNow.map((e) => e.title).join(", ")}
-              </div>
-            )}
-          </section>
-
-          <section className="card">
-            <h2 className="text-sm font-medium uppercase tracking-widest text-muted">
-              Next meal / treat
-            </h2>
-            {now === null ? (
-              <CardSkeleton />
-            ) : nextFood ? (
-              <EventSummary event={nextFood} now={now} />
-            ) : (
-              <p className="mt-3 text-muted">No more food scheduled.</p>
-            )}
-          </section>
         </div>
+      </section>
+
+      <div className="wrap mt-14 grid gap-12 sm:mt-20 md:grid-cols-2 md:gap-16">
+        <NowCard
+          heading="Up next"
+          event={live?.nextEvent}
+          now={now}
+          empty="Nothing else on the schedule."
+          extra={
+            live && live.happeningNow.length > 0 ? (
+              <p className="mt-5">
+                <span className="tag mr-2 bg-gold text-on-tag">Happening now</span>
+                {live.happeningNow.map((e) => e.title).join(", ")}
+              </p>
+            ) : null
+          }
+        />
+        <NowCard heading="Next food" event={live?.nextFood} now={now} empty="No more food scheduled." />
       </div>
 
       <Schedule events={events} now={now} />
-    </div>
+    </>
   );
 }
 
 function Countdown({ ms }: { ms: number }) {
-  const total = Math.max(0, Math.floor(ms / 1000));
-  const parts = [
-    { label: "days", value: Math.floor(total / 86400) },
-    { label: "hrs", value: Math.floor((total % 86400) / 3600) },
-    { label: "min", value: Math.floor((total % 3600) / 60) },
-    { label: "sec", value: total % 60 },
-  ];
+  const { days, hours, minutes, seconds } = countdownParts(ms);
+  const totalHours = days * 24 + hours;
+  const groups = [totalHours, minutes, seconds].map((n) => String(n).padStart(2, "0"));
 
   return (
-    <div className="mt-3 flex gap-4 font-mono sm:gap-6">
-      {parts.map((p) => (
-        <div key={p.label}>
-          <div className="text-4xl font-semibold tabular-nums sm:text-6xl">
-            {String(p.value).padStart(2, "0")}
-          </div>
-          <div className="text-xs uppercase tracking-widest opacity-75">{p.label}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function EventSummary({ event, now }: { event: EventRow; now: number }) {
-  const live = start(event) <= now;
-  const minutes = Math.round((start(event) - now) / 60000);
-  const relative = live
-    ? "Now"
-    : minutes < 60
-      ? `in ${minutes} min`
-      : `in ${Math.floor(minutes / 60)}h ${minutes % 60}m`;
-
-  return (
-    <div className="mt-3">
-      <p className="text-xl font-semibold">{event.title}</p>
-      <p className="mt-1 text-sm text-muted">
-        {formatRange(event)}
-        {event.location && ` · ${event.location}`}
+    <>
+      <p className="sr-only">
+        {totalHours} hours and {minutes} minutes left.
       </p>
-      {event.description && <p className="mt-2 text-sm">{event.description}</p>}
-      <span className={`chip mt-3 ${live ? "border-accent text-accent" : ""}`}>{relative}</span>
-    </div>
+      <p
+        aria-hidden="true"
+        className="display rise mt-3 text-monument tabular-nums"
+        style={{ "--i": 1 } as React.CSSProperties}
+      >
+        {groups.map((g, i) => (
+          <span key={i}>
+            {i > 0 && <span className="opacity-60">:</span>}
+            {/* Re-keying on the value replays the drop-in only for digits that changed. */}
+            <span key={g} className="digit-in">
+              {g}
+            </span>
+          </span>
+        ))}
+      </p>
+    </>
   );
 }
 
-function CardSkeleton() {
+function NowCard({
+  heading,
+  event,
+  now,
+  empty,
+  extra,
+}: {
+  heading: string;
+  event: EventRow | undefined;
+  now: number | null;
+  empty: string;
+  extra?: React.ReactNode;
+}) {
   return (
-    <div className="mt-3 space-y-2">
-      <div className="h-6 w-2/3 animate-pulse rounded bg-foreground/10" />
-      <div className="h-4 w-1/2 animate-pulse rounded bg-foreground/10" />
-    </div>
+    <section>
+      <h2 className="text-lead font-semibold text-muted">{heading}</h2>
+      {now === null ? (
+        <div className="mt-4 space-y-3" aria-hidden="true">
+          <div className="skeleton h-12 w-3/4" />
+          <div className="skeleton h-5 w-1/2" />
+        </div>
+      ) : event ? (
+        <div className="mt-3">
+          <p className="display text-title">{event.title}</p>
+          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-lg">
+            <span className="tag bg-ink text-ground">{relativeTime(startMs(event), now)}</span>
+            <span className="tabular-nums">{formatRange(event)}</span>
+            {event.location && <span className="text-muted">{event.location}</span>}
+          </p>
+          {event.description && <p className="mt-4 max-w-prose text-muted">{event.description}</p>}
+        </div>
+      ) : (
+        <p className="mt-3 text-lg text-muted">{empty}</p>
+      )}
+      {extra}
+    </section>
   );
 }
 
@@ -174,38 +181,37 @@ function Schedule({ events, now }: { events: EventRow[]; now: number | null }) {
   }
 
   return (
-    <aside className="card h-fit lg:sticky lg:top-20 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
-      <h2 className="text-lg font-semibold">Full schedule</h2>
-      {events.length === 0 && <p className="mt-3 text-sm text-muted">No events yet.</p>}
+    <section aria-labelledby="schedule-heading" className="wrap mt-24 sm:mt-32">
+      <h2 id="schedule-heading" className="display text-title">
+        Schedule
+      </h2>
+      {events.length === 0 && <p className="mt-4 text-lg text-muted">No events yet.</p>}
       {[...days].map(([day, dayEvents]) => (
-        <div key={day} className="mt-5">
-          <h3 className="mb-2 text-xs font-medium uppercase tracking-widest text-muted" suppressHydrationWarning>
+        <div key={day} className="mt-12 lg:grid lg:grid-cols-12 lg:gap-16">
+          <h3 className="text-lead font-semibold lg:col-span-3 lg:pt-3" suppressHydrationWarning>
             {day}
           </h3>
-          <ol className="space-y-1">
+          <ol className="mt-4 lg:col-span-9 lg:mt-0">
             {dayEvents.map((e) => {
-              const past = now !== null && end(e) < now;
-              const live = now !== null && start(e) <= now && now < end(e);
+              const status = now === null ? "upcoming" : eventStatus(e, now);
               return (
                 <li
                   key={e.id}
-                  className={`flex gap-3 rounded-lg px-2 py-1.5 text-sm ${
-                    live ? "bg-accent/10" : ""
-                  } ${past ? "opacity-45" : ""}`}
+                  aria-current={status === "live" ? "time" : undefined}
+                  className={`grid gap-x-6 gap-y-1 px-3 py-3 sm:grid-cols-[11rem_1fr] ${
+                    status === "live" ? "bg-surface-2" : ""
+                  } ${status === "past" ? "text-muted" : ""}`}
                 >
-                  <span className="w-32 shrink-0 tabular-nums text-muted" suppressHydrationWarning>
+                  <span className="tabular-nums" suppressHydrationWarning>
                     {formatRange(e)}
                   </span>
                   <span className="min-w-0">
-                    <span className="font-medium">{e.title}</span>
-                    {e.kind !== "event" && (
-                      <span
-                        className={`chip ml-2 ${e.kind === "deadline" ? "border-accent text-accent" : ""}`}
-                      >
-                        {EVENT_KIND_LABELS[e.kind]}
-                      </span>
-                    )}
-                    {e.location && <span className="block text-xs text-muted">{e.location}</span>}
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="text-lg font-semibold">{e.title}</span>
+                      {status === "live" && <span className="tag bg-gold text-on-tag">Live</span>}
+                      {e.kind !== "event" && <KindTag kind={e.kind} />}
+                    </span>
+                    {e.location && <span className="block text-muted">{e.location}</span>}
                   </span>
                 </li>
               );
@@ -213,6 +219,6 @@ function Schedule({ events, now }: { events: EventRow[]; now: number | null }) {
           </ol>
         </div>
       ))}
-    </aside>
+    </section>
   );
 }

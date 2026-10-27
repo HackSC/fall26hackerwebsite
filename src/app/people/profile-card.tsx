@@ -1,51 +1,58 @@
 import Link from "next/link";
-import type { Profile } from "@/lib/database.types";
+import type { Profile, TeamStatus } from "@/lib/database.types";
 import { roleLabel, teamStatusLabel } from "@/lib/constants";
 import { ContactLinks } from "./contact-links";
 
+export function StatusTag({ status }: { status: TeamStatus }) {
+  return (
+    <span
+      className="tag shrink-0 text-on-tag"
+      style={{ background: status === "looking" ? "var(--tag-looking)" : "var(--tag-team)" }}
+    >
+      {teamStatusLabel(status)}
+    </span>
+  );
+}
+
 export function ProfileCard({ profile: p, isMe }: { profile: Profile; isMe: boolean }) {
   return (
-    <article className="card flex h-full flex-col">
+    <article className="flex h-full flex-col bg-surface p-5 sm:p-6">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <Link href={`/people/${p.id}`} className="text-lg font-semibold hover:text-accent">
-            {p.name}
-          </Link>
-          {isMe && <span className="chip ml-2 border-gold text-xs">You</span>}
-          <p className="text-sm text-muted">
+          <h2 className="text-xl font-bold tracking-tight">
+            <Link href={`/people/${p.id}`} className="underline-offset-4 hover:underline">
+              {p.name}
+            </Link>
+            {isMe && <span className="tag ml-2 bg-gold align-middle text-on-tag">You</span>}
+          </h2>
+          <p className="text-muted">
             {p.usc_year} · {p.major}
           </p>
         </div>
-        <span
-          className={`chip shrink-0 ${
-            p.team_status === "looking" ? "border-accent text-accent" : "text-muted"
-          }`}
-        >
-          {teamStatusLabel(p.team_status)}
-        </span>
+        <StatusTag status={p.team_status} />
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        <span className="chip bg-foreground/5 font-medium">{roleLabel(p.role)}</span>
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        <span className="tag bg-ink text-ground">{roleLabel(p.role)}</span>
         {p.languages.map((l) => (
-          <span key={l} className="chip">
+          <span key={l} className="tag">
             {l}
           </span>
         ))}
       </div>
 
       {p.skills.length > 0 && (
-        <p className="mt-2 text-sm text-muted">
-          <span className="font-medium text-foreground">Skills:</span> {p.skills.join(", ")}
+        <p className="mt-3 text-muted">
+          <span className="font-semibold text-ink">Skills:</span> {p.skills.join(", ")}
         </p>
       )}
 
-      {p.looking_for && <p className="mt-3 line-clamp-3 text-sm">“{p.looking_for}”</p>}
+      {p.looking_for && <p className="mt-4 line-clamp-3">“{p.looking_for}”</p>}
 
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-4 text-sm">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
         <ContactLinks profile={p} />
         {p.team_size_pref && (
-          <span className="text-muted">
+          <span className="text-sm text-muted">
             Prefers {p.team_size_pref === 1 ? "solo" : `team of ${p.team_size_pref}`}
           </span>
         )}

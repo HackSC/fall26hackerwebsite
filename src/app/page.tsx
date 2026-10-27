@@ -7,9 +7,8 @@ export default async function Home() {
   return (
     <>
       {error && (
-        <p className="card mb-6 text-sm text-accent">
-          Couldn&apos;t load the schedule: {error}. Did you run the migration in{" "}
-          <code>supabase/migrations</code>?
+        <p role="alert" className="wrap py-4 font-semibold text-danger">
+          Couldn&apos;t load the schedule: {error}. Did you run the migration in <code>supabase/migrations</code>?
         </p>
       )}
       <Dashboard events={events} />

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/auth";
@@ -29,12 +30,12 @@ function parseFilters(params: SearchParams): PeopleFilters {
 
 export default function PeoplePage({ searchParams }: PageProps<"/people">) {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">People</h1>
-      <p className="mt-1 text-sm text-muted">
-        Find teammates — filter by role, language, and team status, then reach out.
+    <div className="wrap pt-10 sm:pt-16">
+      <h1 className="display rise text-title">Find your team.</h1>
+      <p className="rise mt-4 max-w-2xl text-lead text-muted" style={{ "--i": 1 } as React.CSSProperties}>
+        Filter by role, language and team status, then reach out.
       </p>
-      <Suspense fallback={<div className="card mt-6 h-64 animate-pulse" />}>
+      <Suspense fallback={<div className="skeleton mt-10 h-64" />}>
         <PeopleResults searchParams={searchParams} />
       </Suspense>
     </div>
@@ -45,11 +46,24 @@ async function PeopleResults({ searchParams }: Pick<PageProps<"/people">, "searc
   const user = await getCurrentUser();
   if (!user) {
     return (
-      <div className="card mt-6 text-center">
-        <p>Sign in to see other hackers and their contact info.</p>
-        <Link href="/login?next=/people" className="btn mt-4">
-          Sign in
-        </Link>
+      <div className="mt-12 grid gap-10 lg:grid-cols-12 lg:gap-16">
+        <div className="lg:col-span-5">
+          <p className="text-lead font-semibold">Sign in to see other hackers and how to reach them.</p>
+          <Link href="/login?next=/people" className="btn mt-6">
+            Sign in
+          </Link>
+        </div>
+        <figure className="lg:col-span-7">
+          <Image
+            src="/images/doheny-library-postcard.jpg"
+            alt="Vintage colour postcard of Doheny Memorial Library at USC, a red-brick Italian Romanesque building with a tall arched window."
+            width={1600}
+            height={1024}
+            sizes="(min-width: 1024px) 55vw, 100vw"
+            className="h-auto w-full"
+          />
+          <figcaption className="mt-3 text-sm text-muted">Doheny Library, on a postcard from the 1940s.</figcaption>
+        </figure>
       </div>
     );
   }
@@ -63,8 +77,8 @@ async function PeopleResults({ searchParams }: Pick<PageProps<"/people">, "searc
   return (
     <>
       {!myProfile && (
-        <div className="card mt-6 flex flex-wrap items-center justify-between gap-3 border-gold/60 bg-gold/10">
-          <p className="text-sm">You don&apos;t have a profile yet, so others can&apos;t find you.</p>
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 bg-gold p-5 text-on-tag">
+          <p className="font-semibold">You don&apos;t have a profile yet, so other hackers can&apos;t find you.</p>
           <Link href="/profile" className="btn">
             Create profile
           </Link>
@@ -74,16 +88,23 @@ async function PeopleResults({ searchParams }: Pick<PageProps<"/people">, "searc
       <FilterBar filters={filters} />
 
       {error ? (
-        <p className="card mt-6 text-sm text-accent">Couldn&apos;t load profiles: {error}</p>
+        <p role="alert" className="mt-8 font-semibold text-danger">
+          Couldn&apos;t load profiles: {error}
+        </p>
       ) : (
         <>
-          <p className="mt-6 text-sm text-muted">
+          <p className="mt-10 font-semibold text-muted" role="status">
             {profiles.length} {profiles.length === 1 ? "person" : "people"}
           </p>
           {profiles.length === 0 ? (
-            <p className="card mt-3 text-center text-muted">No one matches those filters.</p>
+            <div className="mt-4 bg-surface p-8">
+              <p className="text-lead font-semibold">No one matches those filters.</p>
+              <Link href="/people" className="link mt-3 inline-block">
+                Clear filters
+              </Link>
+            </div>
           ) : (
-            <ul className="mt-3 grid gap-4 md:grid-cols-2">
+            <ul className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {profiles.map((p) => (
                 <li key={p.id}>
                   <ProfileCard profile={p} isMe={p.id === user.id} />
