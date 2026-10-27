@@ -304,6 +304,15 @@ p {
   display: inline-block;
   animation: digit-in 220ms var(--ease-out-strong);
 }
+/* Slow bob for the hero hibiscus; the only looping motion on the site. */
+@keyframes float {
+  50% {
+    transform: translateY(-10px) rotate(-2deg);
+  }
+}
+.float {
+  animation: float 6s ease-in-out infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -312,7 +321,8 @@ p {
   .rise {
     animation: fade 300ms ease both;
   }
-  .digit-in {
+  .digit-in,
+  .float {
     animation: none;
   }
   .btn:active,

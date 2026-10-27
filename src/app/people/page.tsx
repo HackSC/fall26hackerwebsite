@@ -31,10 +31,24 @@ function parseFilters(params: SearchParams): PeopleFilters {
 export default function PeoplePage({ searchParams }: PageProps<"/people">) {
   return (
     <div className="wrap pt-10 sm:pt-16">
-      <h1 className="display rise text-title">Find your team.</h1>
-      <p className="rise mt-4 max-w-2xl text-lead text-muted" style={{ "--i": 1 } as React.CSSProperties}>
-        Filter by role, language and team status, then reach out.
-      </p>
+      <div className="grid items-center gap-8 md:grid-cols-12">
+        <div className="md:col-span-7">
+          <h1 className="display rise text-title">Find your team.</h1>
+          <p className="rise mt-4 max-w-2xl text-lead text-muted" style={{ "--i": 1 } as React.CSSProperties}>
+            Filter by role, language and team status, then reach out.
+          </p>
+        </div>
+        <Image
+          src="/images/campus-diorama.webp"
+          alt="Illustration: an isometric sunny campus courtyard with a red-brick library, palm trees and students hacking at picnic tables."
+          width={1800}
+          height={1157}
+          priority
+          sizes="(min-width: 768px) 40vw, 100vw"
+          className="rise h-auto w-full md:col-span-5"
+          style={{ "--i": 2 } as React.CSSProperties}
+        />
+      </div>
       <Suspense fallback={<div className="skeleton mt-10 h-64" />}>
         <PeopleResults searchParams={searchParams} />
       </Suspense>
@@ -46,24 +60,11 @@ async function PeopleResults({ searchParams }: Pick<PageProps<"/people">, "searc
   const user = await getCurrentUser();
   if (!user) {
     return (
-      <div className="mt-12 grid gap-10 lg:grid-cols-12 lg:gap-16">
-        <div className="lg:col-span-5">
-          <p className="text-lead font-semibold">Sign in to see other hackers and how to reach them.</p>
-          <Link href="/login?next=/people" className="btn mt-6">
-            Sign in
-          </Link>
-        </div>
-        <figure className="lg:col-span-7">
-          <Image
-            src="/images/doheny-library-postcard.jpg"
-            alt="Vintage colour postcard of Doheny Memorial Library at USC, a red-brick Italian Romanesque building with a tall arched window."
-            width={1600}
-            height={1024}
-            sizes="(min-width: 1024px) 55vw, 100vw"
-            className="h-auto w-full"
-          />
-          <figcaption className="mt-3 text-sm text-muted">Doheny Library, on a postcard from the 1940s.</figcaption>
-        </figure>
+      <div className="mt-12">
+        <p className="text-lead font-semibold">Sign in to see other hackers and how to reach them.</p>
+        <Link href="/login?next=/people" className="btn mt-6">
+          Sign in
+        </Link>
       </div>
     );
   }
@@ -97,11 +98,14 @@ async function PeopleResults({ searchParams }: Pick<PageProps<"/people">, "searc
             {profiles.length} {profiles.length === 1 ? "person" : "people"}
           </p>
           {profiles.length === 0 ? (
-            <div className="mt-4 bg-surface p-8">
-              <p className="text-lead font-semibold">No one matches those filters.</p>
-              <Link href="/people" className="link mt-3 inline-block">
-                Clear filters
-              </Link>
+            <div className="mt-4 flex items-center gap-6 bg-surface p-8">
+              <Image src="/images/sticker-palm.webp" alt="" width={459} height={512} className="h-24 w-auto" />
+              <div>
+                <p className="text-lead font-semibold">No one matches those filters.</p>
+                <Link href="/people" className="link mt-3 inline-block">
+                  Clear filters
+                </Link>
+              </div>
             </div>
           ) : (
             <ul className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">

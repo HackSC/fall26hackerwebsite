@@ -49,7 +49,7 @@ Collect HackSC's real palette, type, logo and voice from past repos and live sit
 
 - **Live (dashboard):** hibiscus countdown field, "Up next" and "Next food", full schedule by day with kind tags and a "Live" row.
 - **Sign in:** big title, form, Tommy Trojan photo; the "sent" state is announced to screen readers.
-- **People:** title, gold "no profile yet" banner, filter bar on a surface, profile cards; signed-out state shows the Doheny postcard.
+- **People:** title, gold "no profile yet" banner, filter bar on a surface, profile cards.
 - **Person:** name and status on the left, details as a `<dl>` on the right.
 - **Profile:** sections as fieldsets with visible legends; every input has a `<label for>`; errors are linked with `aria-describedby`.
 
@@ -60,10 +60,21 @@ Collect HackSC's real palette, type, logo and voice from past repos and live sit
 - Contrast: every text and background pair computed; the lowest is 5.3:1 (AA needs 4.5).
 - taste-skill inspector on `/`, `/login` and `/people`: findings reviewed and left as they are, because its rules target marketing pages. "Too few pictures" and "no video" don't fit a live schedule; the cream is HackSC's own `#FEF7E5`; "08" is the countdown, not decorative numbering; the "covered headline" is the sticky header passing over it on scroll; the 14px text is captions and image credits, while body copy is 16–28px.
 
+### Task 8: Generated art ✅ (2026-10-27)
+
+Made in Higgsfield's web app (the Higgsfield connector here can only read history, not generate):
+
+- **Nano Banana Pro:** low-poly hibiscus render (1:1, 2K, 2 tries) and isometric campus diorama (16:9, 2K).
+- **Nano Banana 2:** five flat stickers (boba, taco, laptop, trophy, palm tree; 1:1, 1K).
+- **GPT Image 2:** link preview with "HackSC Fall '26" text (16:9, 2K, high).
+- Backgrounds removed locally (flood fill from the image border, `higgsfield-tools/cutout.py`), resized to WebP. The boba got a periwinkle outline (`outline.py`) because its cream cup vanished on the cream page. Prompts are in `higgsfield-asset-prompts.md` next to the repo.
+- The 3D model (GLB) step was skipped: Higgsfield's 3D models are only in its API, not its website.
+
 ---
 
 ## Not done / next
 
-- **Commit and PR.** Waiting on the team. Also leave out the `supabase/config.toml` port change (a local-only workaround).
+- **PR.** The redesign is committed on `redesign/hacksc-design-system`; the generated art is not committed yet. Also leave out the `supabase/config.toml` port change (a local-only workaround).
 - **Dev-only warning:** on signed-in pages, Next's dev overlay reports that Supabase's `getClaims()` reads `Date.now()` during prerendering. It comes from `getCurrentUser`, which the redesign didn't touch, and the build passes. A fix is `await connection()` at the top of `getCurrentUser` in `src/lib/auth.ts`, which the team should decide on.
+- **Link preview address:** set `metadataBase` in `src/app/layout.tsx` to the real site URL once it's known. Without it, the build points the link-preview image at `localhost` (Vercel fills this in automatically; other hosts don't).
 - **Optional:** the "h✿cksc" wordmark and the HackSC Guy mascot (used on the hacker dashboard since 2024) could replace the 2025 lockup if the team prefers the app-side mark.

@@ -70,13 +70,21 @@ React components:
 
 ## Images
 
-Found pictures, all public domain or CC0, credited in the footer from [`src/lib/credits.ts`](../src/lib/credits.ts):
+Every picture is credited in the footer from [`src/lib/credits.ts`](../src/lib/credits.ts). Add new ones there when you add them.
+
+**Found pictures** (public domain or CC0):
 
 - A 1855 hand-colored China-Rose (hibiscus) plate, in the footer.
 - Tommy Trojan, on the sign-in page.
-- A 1940s Doheny Library postcard, on the signed-out People page.
 
-Add new ones to `credits.ts` when you add them.
+**Generated with Higgsfield** (in `public/images/`, backgrounds made transparent so they work on cream and night navy):
+
+- `hibiscus-3d.webp`: low-poly hibiscus render, floating on the right of the Live countdown (desktop only).
+- `sticker-*.webp`: flat stickers in the palette. Laptop for events and workshops, taco for meals, boba for treats, trophy for deadlines; shown beside "Up next" and "Next food". The palm tree marks empty states.
+- `campus-diorama.webp`: isometric campus courtyard, in the People page header.
+- `src/app/opengraph-image.jpg`: the link preview for Slack, iMessage and social posts.
+
+New generated art should keep to the palette hex values in its prompt and sit on a plain background so it can be cut out. Art in the same cream as the page (like the boba cup) needs a periwinkle sticker outline, or it disappears in light mode. The prompts and the cutout/outline scripts are in `higgsfield-asset-prompts.md` and `higgsfield-tools/`, next to the repo.
 
 ## Adding a page
 

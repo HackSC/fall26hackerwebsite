@@ -1,4 +1,4 @@
-// Found pictures used on the site. All are public domain or CC0; credited anyway.
+// Pictures used on the site and where they came from.
 export const IMAGE_CREDITS = [
   {
     what: "China-Rose plate",
@@ -11,8 +11,8 @@ export const IMAGE_CREDITS = [
     href: "https://commons.wikimedia.org/wiki/File:Tommy_trojan_statue_on_the_USC_campus_-_September_2024.jpg",
   },
   {
-    what: "Doheny Library postcard",
-    credit: "Tichnor Brothers, circa 1935–45. Public domain, via Wikimedia Commons",
-    href: "https://commons.wikimedia.org/wiki/File:Edward_L._Doheny_Jr._Memorial_Library,_University_of_Southern_California,_Los_Angeles,_California_(62699).jpg",
+    what: "Hibiscus render, stickers and campus illustration",
+    credit: "AI-generated for HackSC with Higgsfield",
+    href: "https://higgsfield.ai",
   },
 ] as const;

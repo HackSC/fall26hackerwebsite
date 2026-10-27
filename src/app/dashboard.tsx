@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { EventKind, EventRow } from "@/lib/database.types";
 import { EVENT_KIND_LABELS, EVENT_TIME_ZONE } from "@/lib/constants";
@@ -43,6 +44,15 @@ const TAG_BG: Record<EventKind, string> = {
   deadline: "var(--tag-deadline)",
 };
 
+// Generated sticker shown next to "Up next" and "Next food" for each kind of event.
+const STICKERS: Record<EventKind, { src: string; width: number; height: number }> = {
+  event: { src: "/images/sticker-laptop.webp", width: 512, height: 402 },
+  workshop: { src: "/images/sticker-laptop.webp", width: 512, height: 402 },
+  meal: { src: "/images/sticker-taco.webp", width: 512, height: 369 },
+  treat: { src: "/images/sticker-boba.webp", width: 258, height: 512 },
+  deadline: { src: "/images/sticker-trophy.webp", width: 512, height: 466 },
+};
+
 function KindTag({ kind }: { kind: EventKind }) {
   return (
     <span className={`tag text-on-tag ${kind === "event" ? "tag-event" : ""}`} style={{ background: TAG_BG[kind] }}>
@@ -58,7 +68,13 @@ export function Dashboard({ events }: { events: EventRow[] }) {
   return (
     <>
       <section aria-labelledby="countdown-heading" className="bg-field text-on-field">
-        <div className="wrap pt-10 pb-12 sm:pt-16 sm:pb-20">
+        <div className="wrap relative pt-10 pb-12 sm:pt-16 sm:pb-20">
+          <div
+            className="rise pointer-events-none absolute top-1/2 right-4 hidden w-[22vw] max-w-[20rem] -translate-y-1/2 sm:right-8 lg:block"
+            style={{ "--i": 3 } as React.CSSProperties}
+          >
+            <Image src="/images/hibiscus-3d.webp" alt="" width={927} height={1200} priority className="float h-auto w-full" />
+          </div>
           <h1 id="countdown-heading" className="rise text-lead font-semibold">
             HackSC Fall &apos;26 · {live?.pastDeadline ? "Submissions" : "Submissions close in"}
           </h1>
@@ -149,7 +165,19 @@ function NowCard({
 }) {
   return (
     <section>
-      <h2 className="text-lead font-semibold text-muted">{heading}</h2>
+      <div className="flex items-end justify-between gap-4">
+        <h2 className="text-lead font-semibold text-muted">{heading}</h2>
+        {now !== null && event && (
+          <Image
+            key={event.id}
+            src={STICKERS[event.kind].src}
+            alt=""
+            width={STICKERS[event.kind].width}
+            height={STICKERS[event.kind].height}
+            className="rise h-20 w-auto sm:h-24"
+          />
+        )}
+      </div>
       {now === null ? (
         <div className="mt-4 space-y-3" aria-hidden="true">
           <div className="skeleton h-12 w-3/4" />
@@ -185,7 +213,12 @@ function Schedule({ events, now }: { events: EventRow[]; now: number | null }) {
       <h2 id="schedule-heading" className="display text-title">
         Schedule
       </h2>
-      {events.length === 0 && <p className="mt-4 text-lg text-muted">No events yet.</p>}
+      {events.length === 0 && (
+        <div className="mt-6 flex items-center gap-6">
+          <Image src="/images/sticker-palm.webp" alt="" width={459} height={512} className="h-24 w-auto" />
+          <p className="text-lg text-muted">No events yet. Check back soon.</p>
+        </div>
+      )}
       {[...days].map(([day, dayEvents]) => (
         <div key={day} className="mt-12 lg:grid lg:grid-cols-12 lg:gap-16">
           <h3 className="text-lead font-semibold lg:col-span-3 lg:pt-3" suppressHydrationWarning>
