@@ -30,10 +30,6 @@ function parseFilters(params: SearchParams): PeopleFilters {
 export default function PeoplePage({ searchParams }: PageProps<"/people">) {
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">People</h1>
-      <p className="mt-1 text-sm text-muted">
-        Find teammates — filter by role, language, and team status, then reach out.
-      </p>
       <Suspense fallback={<div className="card mt-6 h-64 animate-pulse" />}>
         <PeopleResults searchParams={searchParams} />
       </Suspense>
@@ -71,28 +67,50 @@ async function PeopleResults({ searchParams }: Pick<PageProps<"/people">, "searc
         </div>
       )}
 
-      <FilterBar filters={filters} />
+      
+      <div className="mt-6 grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+          <FilterBar filters={filters} />
+        </aside>
 
-      {error ? (
-        <p className="card mt-6 text-sm text-accent">Couldn&apos;t load profiles: {error}</p>
-      ) : (
-        <>
-          <p className="mt-6 text-sm text-muted">
-            {profiles.length} {profiles.length === 1 ? "person" : "people"}
-          </p>
-          {profiles.length === 0 ? (
-            <p className="card mt-3 text-center text-muted">No one matches those filters.</p>
+        <section className="min-w-0">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold tracking-tight">
+              <span className="mr-2 text-[#FF4D4D]">✶</span>
+              Nothing great is made alone.
+            </h1>
+
+            {error ? (
+              <p className="mt-1 text-sm text-muted">
+                Hacker counts unavailable
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-muted">
+                {profiles.length} matching hackers ·{" "}
+                {profiles.filter((p) => p.team_status === "looking").length} looking for a team
+              </p>
+            )}
+          </div>
+
+          {error ? (
+            <p className="card mt-6 text-sm text-accent">Couldn&apos;t load profiles: {error}</p>
           ) : (
-            <ul className="mt-3 grid gap-4 md:grid-cols-2">
-              {profiles.map((p) => (
-                <li key={p.id}>
-                  <ProfileCard profile={p} isMe={p.id === user.id} />
-                </li>
-              ))}
-            </ul>
+            <>
+              {profiles.length === 0 ? (
+                <p className="card mt-3 text-center text-muted">No one matches those filters.</p>
+              ) : (
+                <ul className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {profiles.map((p) => (
+                    <li key={p.id}>
+                      <ProfileCard profile={p} isMe={p.id === user.id} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
-        </>
-      )}
+        </section>
+      </div>
     </>
   );
 }
