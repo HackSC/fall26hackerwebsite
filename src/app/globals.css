@@ -92,8 +92,17 @@
   --color-cobalt: var(--hsc-cobalt);
   --color-on-tag: var(--on-tag);
 
-  --font-sans: var(--font-text), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-text), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-text, var(--font-geist-sans)), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-text, var(--font-geist-sans)), ui-sans-serif, system-ui, sans-serif;
+
+  /* Names used by the pages merged from main (#1, #3), aliased onto the roles above.
+     shortcut: bridge between two token sets, remove when the Figma rebuild settles on one. */
+  --color-background: var(--ground);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-border: var(--line);
+  --color-accent: var(--danger);
+  --color-accent-foreground: #ffffff;
 
   /* Five type sizes do all the work. Nothing readable goes below 14px. */
   --text-monument: clamp(4.5rem, 17vw, 16rem);
@@ -276,6 +285,19 @@ p {
   }
 
   /* Loading placeholders: a static tone block, no looping pulse. */
+  /* Classes the pages merged from main use, as main defined them. */
+  .card {
+    @apply rounded-2xl border border-border bg-card p-5;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-foreground/5;
+  }
+  .chip {
+    @apply inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-xs;
+  }
   .skeleton {
     background: var(--surface-2);
   }

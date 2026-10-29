@@ -1,29 +1,60 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useActionState, type ReactNode } from "react";
+import { startTransition, useActionState, useState, type ReactNode } from "react";
 import type { Profile } from "@/lib/database.types";
 import { LANGUAGES, ROLES, TEAM_SIZES, TEAM_STATUSES, USC_YEARS } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/client";
+import { Avatar } from "../avatar";
 import { saveProfile, type ProfileFormState } from "./actions";
+
+const AVATAR_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" } as const;
+const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 
 export function ProfileForm({
   profile,
+  userId,
   defaultEmail,
 }: {
   profile: Profile | null;
+  userId: string;
   defaultEmail: string;
 }) {
   const [state, action, pending] = useActionState<ProfileFormState, FormData>(saveProfile, {
     status: "idle",
   });
   const errors = state.fieldErrors ?? {};
-  // Props every single-input field shares: id for its label, and error wiring.
-  const a11y = (name: string) => ({
-    id: name,
-    name,
-    "aria-invalid": errors[name as keyof typeof errors] ? true : undefined,
-    "aria-describedby": errors[name as keyof typeof errors] ? `${name}-error` : undefined,
-  });
+
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  function pickAvatar(file: File | undefined) {
+    setAvatarError(null);
+    if (!file) return;
+    if (!(file.type in AVATAR_TYPES)) return setAvatarError("Use a PNG, JPG, or WebP image.");
+    if (file.size > AVATAR_MAX_BYTES) return setAvatarError("Image must be 2 MB or smaller.");
+    if (preview) URL.revokeObjectURL(preview);
+    setAvatarFile(file);
+    setPreview(URL.createObjectURL(file));
+  }
+
+  /** Upload the chosen photo to Storage and return its public URL. */
+  async function uploadAvatar(file: File) {
+    const supabase = createClient();
+    const ext = AVATAR_TYPES[file.type as keyof typeof AVATAR_TYPES];
+    const path = `${userId}/avatar-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("avatars").upload(path, file, {
+      contentType: file.type,
+    });
+    if (error) throw error;
+    // Drop older photos so the folder doesn't grow with every change.
+    const { data: old } = await supabase.storage.from("avatars").list(userId);
+    const stale = (old ?? []).map((f) => `${userId}/${f.name}`).filter((p) => p !== path);
+    if (stale.length) await supabase.storage.from("avatars").remove(stale);
+    return supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+  }
 
   const known = new Set<string>(LANGUAGES);
   const otherLanguages = (profile?.languages ?? []).filter((l) => !known.has(l)).join(", ");
@@ -32,20 +63,53 @@ export function ProfileForm({
     <form
       // Submitting through a transition (instead of `action={action}`) stops
       // React from resetting the form, so edits survive a validation error.
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
+        if (avatarFile) {
+          setUploading(true);
+          try {
+            formData.set("avatar_url", await uploadAvatar(avatarFile));
+            setAvatarFile(null);
+          } catch (err) {
+            const reason = err instanceof Error ? err.message : "unknown error";
+            setAvatarError(`Couldn't upload your photo: ${reason}`);
+            return;
+          } finally {
+            setUploading(false);
+          }
+        }
         startTransition(() => action(formData));
       }}
-      className="mt-12 space-y-14"
+      className="mt-6 space-y-6"
     >
       <Section title="About you">
-        <Field label="Name" htmlFor="name" error={errors.name}>
-          <input {...a11y("name")} required autoComplete="name" defaultValue={profile?.name} className="input" />
+        <div className="flex items-center gap-4">
+          <Avatar
+            url={preview ?? profile?.avatar_url}
+            name={profile?.name}
+            className="size-20 text-2xl"
+          />
+          <div>
+            <label className="btn-ghost cursor-pointer">
+              {profile?.avatar_url || preview ? "Change photo" : "Upload photo"}
+              <input
+                type="file"
+                accept={Object.keys(AVATAR_TYPES).join(",")}
+                onChange={(e) => pickAvatar(e.target.files?.[0])}
+                className="sr-only"
+              />
+            </label>
+            <p className="mt-1.5 text-xs text-muted">PNG, JPG, or WebP, up to 2 MB. Optional.</p>
+            {avatarError && <p className="mt-1 text-sm text-accent">{avatarError}</p>}
+          </div>
+        </div>
+        <Field label="Name" error={errors.name}>
+          <input name="name" required defaultValue={profile?.name} className="input" />
         </Field>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="USC year" htmlFor="usc_year" error={errors.usc_year}>
-            <select {...a11y("usc_year")} required defaultValue={profile?.usc_year ?? ""} className="input">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="USC year" error={errors.usc_year}>
+            <select name="usc_year" required defaultValue={profile?.usc_year ?? ""} className="input">
               <option value="" disabled>
                 Select…
               </option>
@@ -54,9 +118,9 @@ export function ProfileForm({
               ))}
             </select>
           </Field>
-          <Field label="Major" htmlFor="major" error={errors.major}>
+          <Field label="Major" error={errors.major}>
             <input
-              {...a11y("major")}
+              name="major"
               required
               defaultValue={profile?.major}
               placeholder="Computer Science"
@@ -67,29 +131,28 @@ export function ProfileForm({
       </Section>
 
       <Section title="Contact">
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Email" htmlFor="email" error={errors.email}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Email" error={errors.email}>
             <input
-              {...a11y("email")}
+              name="email"
               type="email"
               required
-              autoComplete="email"
               defaultValue={profile?.email ?? defaultEmail}
               className="input"
             />
           </Field>
-          <Field label="Discord username" htmlFor="discord" error={errors.discord}>
+          <Field label="Discord username" error={errors.discord}>
             <input
-              {...a11y("discord")}
+              name="discord"
               defaultValue={profile?.discord ?? ""}
               placeholder="tommytrojan"
               className="input"
             />
           </Field>
         </div>
-        <Field label="LinkedIn, GitHub or portfolio" htmlFor="link" hint="Optional" error={errors.link}>
+        <Field label="LinkedIn / GitHub / portfolio" hint="Optional" error={errors.link}>
           <input
-            {...a11y("link")}
+            name="link"
             defaultValue={profile?.link ?? ""}
             placeholder="github.com/tommytrojan"
             className="input"
@@ -98,43 +161,46 @@ export function ProfileForm({
       </Section>
 
       <Section title="Skills">
-        <Group label="I mostly do" error={errors.role} errorId="role-error">
-          {ROLES.map((r) => (
-            <Choice
-              key={r.value}
-              type="radio"
-              name="role"
-              value={r.value}
-              label={r.label}
-              defaultChecked={profile?.role === r.value}
-              required
-            />
-          ))}
-        </Group>
-        <Group label="Programming languages">
-          {LANGUAGES.map((lang) => (
-            <Choice
-              key={lang}
-              type="checkbox"
-              name="languages"
-              value={lang}
-              label={lang}
-              defaultChecked={profile?.languages.includes(lang)}
-            />
-          ))}
-        </Group>
-        <Field label="Other languages" htmlFor="other_languages" hint="Comma-separated">
+        <Field label="I mostly do" error={errors.role}>
+          <div className="flex flex-wrap gap-2">
+            {ROLES.map((r) => (
+              <RadioChip
+                key={r.value}
+                name="role"
+                value={r.value}
+                label={r.label}
+                defaultChecked={profile?.role === r.value}
+                required
+              />
+            ))}
+          </div>
+        </Field>
+        <Field label="Programming languages">
+          <div className="flex flex-wrap gap-2">
+            {LANGUAGES.map((lang) => (
+              <label key={lang} className="cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="languages"
+                  value={lang}
+                  defaultChecked={profile?.languages.includes(lang)}
+                  className="peer sr-only"
+                />
+                <span className="chip py-1 text-sm peer-checked:border-accent peer-checked:bg-accent peer-checked:text-accent-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-accent/40">
+                  {lang}
+                </span>
+              </label>
+            ))}
+          </div>
           <input
-            id="other_languages"
             name="other_languages"
             defaultValue={otherLanguages}
-            placeholder="Haskell, Lua"
-            className="input"
+            placeholder="Others, comma-separated (e.g. Haskell, Lua)"
+            className="input mt-3"
           />
         </Field>
-        <Field label="Programming skills" htmlFor="skills" hint="Comma-separated">
+        <Field label="Programming skills" hint="Comma-separated">
           <input
-            id="skills"
             name="skills"
             defaultValue={profile?.skills.join(", ")}
             placeholder="React, machine learning, UI design, iOS, hardware"
@@ -144,25 +210,25 @@ export function ProfileForm({
       </Section>
 
       <Section title="Team">
-        <Group label="Team status" error={errors.team_status} errorId="team_status-error">
-          {TEAM_STATUSES.map((s) => (
-            <Choice
-              key={s.value}
-              type="radio"
-              name="team_status"
-              value={s.value}
-              label={s.label}
-              defaultChecked={(profile?.team_status ?? "looking") === s.value}
-              required
-            />
-          ))}
-        </Group>
-        <Field label="Preferred team size" htmlFor="team_size_pref">
+        <Field label="Team status" error={errors.team_status}>
+          <div className="flex flex-wrap gap-2">
+            {TEAM_STATUSES.map((s) => (
+              <RadioChip
+                key={s.value}
+                name="team_status"
+                value={s.value}
+                label={s.label}
+                defaultChecked={(profile?.team_status ?? "looking") === s.value}
+                required
+              />
+            ))}
+          </div>
+        </Field>
+        <Field label="Preferred team size">
           <select
-            id="team_size_pref"
             name="team_size_pref"
             defaultValue={profile?.team_size_pref?.toString() ?? ""}
-            className="input sm:w-56"
+            className="input sm:w-48"
           >
             <option value="">No preference</option>
             {TEAM_SIZES.map((n) => (
@@ -172,9 +238,8 @@ export function ProfileForm({
             ))}
           </select>
         </Field>
-        <Field label="Looking for" htmlFor="looking_for" hint="Teammates, roles, project ideas, vibes">
+        <Field label="Looking for" hint="Anything — teammates, roles, project ideas, vibes">
           <textarea
-            id="looking_for"
             name="looking_for"
             rows={4}
             maxLength={1000}
@@ -185,21 +250,19 @@ export function ProfileForm({
         </Field>
       </Section>
 
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <button type="submit" className="btn" disabled={pending}>
-          {pending ? "Saving…" : profile ? "Save changes" : "Create profile"}
+      <div className="flex items-center gap-4">
+        <button type="submit" className="btn" disabled={pending || uploading}>
+          {pending || uploading ? "Saving…" : profile ? "Save changes" : "Create profile"}
         </button>
-        <div role="status" aria-live="polite">
-          {state.status === "saved" && (
-            <p className="font-semibold">
-              {state.message}{" "}
-              <Link href="/people" className="link">
-                Find teammates <span aria-hidden="true">→</span>
-              </Link>
-            </p>
-          )}
-          {state.status === "error" && <p className="font-semibold text-danger">{state.message}</p>}
-        </div>
+        {state.status === "saved" && (
+          <p className="text-sm">
+            {state.message}{" "}
+            <Link href="/people" className="text-accent underline">
+              Find teammates →
+            </Link>
+          </p>
+        )}
+        {state.status === "error" && <p className="text-sm text-accent">{state.message}</p>}
       </div>
     </form>
   );
@@ -207,8 +270,9 @@ export function ProfileForm({
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <fieldset className="space-y-6">
-      <legend className="display mb-6 text-3xl sm:text-4xl">{title}</legend>
+    <fieldset className="card space-y-4">
+      <legend className="sr-only">{title}</legend>
+      <h2 className="font-semibold">{title}</h2>
       {children}
     </fieldset>
   );
@@ -216,67 +280,36 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 function Field({
   label,
-  htmlFor,
   hint,
   error,
   children,
 }: {
   label: string;
-  htmlFor: string;
   hint?: string;
   error?: string;
   children: ReactNode;
 }) {
+  // A wrapping <label> would also capture clicks for the chip groups, so the
+  // label text is a plain heading and each input is self-labelled.
   return (
     <div>
-      <label htmlFor={htmlFor} className="field-label">
+      <div className="label">
         {label}
         {hint && <span className="ml-2 font-normal text-muted">{hint}</span>}
-      </label>
+      </div>
       {children}
-      {error && (
-        <p id={`${htmlFor}-error`} className="mt-1.5 font-semibold text-danger">
-          {error}
-        </p>
-      )}
+      {error && <p className="mt-1 text-sm text-accent">{error}</p>}
     </div>
   );
 }
 
-// A chip group is its own fieldset so screen readers announce the question with each option.
-function Group({
-  label,
-  error,
-  errorId,
-  children,
-}: {
-  label: string;
-  error?: string;
-  errorId?: string;
-  children: ReactNode;
-}) {
-  return (
-    <fieldset aria-describedby={error ? errorId : undefined}>
-      <legend className="field-label">{label}</legend>
-      <div className="flex flex-wrap gap-2">{children}</div>
-      {error && (
-        <p id={errorId} className="mt-1.5 font-semibold text-danger">
-          {error}
-        </p>
-      )}
-    </fieldset>
-  );
-}
-
-function Choice({
-  type,
+function RadioChip({
   name,
   value,
   label,
   defaultChecked,
   required,
 }: {
-  type: "radio" | "checkbox";
   name: string;
   value: string;
   label: string;
@@ -284,16 +317,16 @@ function Choice({
   required?: boolean;
 }) {
   return (
-    <label>
+    <label className="cursor-pointer">
       <input
-        type={type}
+        type="radio"
         name={name}
         value={value}
         defaultChecked={defaultChecked}
         required={required}
         className="peer sr-only"
       />
-      <span className="choice peer-checked:bg-action peer-checked:text-on-action peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-(--focus)">
+      <span className="chip px-3 py-1.5 text-sm peer-checked:border-accent peer-checked:bg-accent peer-checked:text-accent-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-accent/40">
         {label}
       </span>
     </label>

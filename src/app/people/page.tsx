@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/auth";
@@ -30,26 +29,8 @@ function parseFilters(params: SearchParams): PeopleFilters {
 
 export default function PeoplePage({ searchParams }: PageProps<"/people">) {
   return (
-    <div className="wrap pt-10 sm:pt-16">
-      <div className="grid items-center gap-8 md:grid-cols-12">
-        <div className="md:col-span-7">
-          <h1 className="display rise text-title">Find your team.</h1>
-          <p className="rise mt-4 max-w-2xl text-lead text-muted" style={{ "--i": 1 } as React.CSSProperties}>
-            Filter by role, language and team status, then reach out.
-          </p>
-        </div>
-        <Image
-          src="/images/campus-diorama.webp"
-          alt="Illustration: an isometric sunny campus courtyard with a red-brick library, palm trees and students hacking at picnic tables."
-          width={1800}
-          height={1157}
-          priority
-          sizes="(min-width: 768px) 40vw, 100vw"
-          className="rise h-auto w-full md:col-span-5"
-          style={{ "--i": 2 } as React.CSSProperties}
-        />
-      </div>
-      <Suspense fallback={<div className="skeleton mt-10 h-64" />}>
+    <div>
+      <Suspense fallback={<div className="card mt-6 h-64 animate-pulse" />}>
         <PeopleResults searchParams={searchParams} />
       </Suspense>
     </div>
@@ -60,9 +41,9 @@ async function PeopleResults({ searchParams }: Pick<PageProps<"/people">, "searc
   const user = await getCurrentUser();
   if (!user) {
     return (
-      <div className="mt-12">
-        <p className="text-lead font-semibold">Sign in to see other hackers and how to reach them.</p>
-        <Link href="/login?next=/people" className="btn mt-6">
+      <div className="card mt-6 text-center">
+        <p>Sign in to see other hackers and their contact info.</p>
+        <Link href="/login?next=/people" className="btn mt-4">
           Sign in
         </Link>
       </div>
@@ -78,46 +59,58 @@ async function PeopleResults({ searchParams }: Pick<PageProps<"/people">, "searc
   return (
     <>
       {!myProfile && (
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 bg-gold p-5 text-on-tag">
-          <p className="font-semibold">You don&apos;t have a profile yet, so other hackers can&apos;t find you.</p>
+        <div className="card mt-6 flex flex-wrap items-center justify-between gap-3 border-gold/60 bg-gold/10">
+          <p className="text-sm">You don&apos;t have a profile yet, so others can&apos;t find you.</p>
           <Link href="/profile" className="btn">
             Create profile
           </Link>
         </div>
       )}
 
-      <FilterBar filters={filters} />
+      
+      <div className="mt-6 grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+          <FilterBar filters={filters} />
+        </aside>
 
-      {error ? (
-        <p role="alert" className="mt-8 font-semibold text-danger">
-          Couldn&apos;t load profiles: {error}
-        </p>
-      ) : (
-        <>
-          <p className="mt-10 font-semibold text-muted" role="status">
-            {profiles.length} {profiles.length === 1 ? "person" : "people"}
-          </p>
-          {profiles.length === 0 ? (
-            <div className="mt-4 flex items-center gap-6 bg-surface p-8">
-              <Image src="/images/sticker-palm.webp" alt="" width={459} height={512} className="h-24 w-auto" />
-              <div>
-                <p className="text-lead font-semibold">No one matches those filters.</p>
-                <Link href="/people" className="link mt-3 inline-block">
-                  Clear filters
-                </Link>
-              </div>
-            </div>
+        <section className="min-w-0">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold tracking-tight">
+              <span className="mr-2 text-[#FF4D4D]">✶</span>
+              Nothing great is made alone.
+            </h1>
+
+            {error ? (
+              <p className="mt-1 text-sm text-muted">
+                Hacker counts unavailable
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-muted">
+                {profiles.length} matching hackers ·{" "}
+                {profiles.filter((p) => p.team_status === "looking").length} looking for a team
+              </p>
+            )}
+          </div>
+
+          {error ? (
+            <p className="card mt-6 text-sm text-accent">Couldn&apos;t load profiles: {error}</p>
           ) : (
-            <ul className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {profiles.map((p) => (
-                <li key={p.id}>
-                  <ProfileCard profile={p} isMe={p.id === user.id} />
-                </li>
-              ))}
-            </ul>
+            <>
+              {profiles.length === 0 ? (
+                <p className="card mt-3 text-center text-muted">No one matches those filters.</p>
+              ) : (
+                <ul className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {profiles.map((p) => (
+                    <li key={p.id}>
+                      <ProfileCard profile={p} isMe={p.id === user.id} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
-        </>
-      )}
+        </section>
+      </div>
     </>
   );
 }

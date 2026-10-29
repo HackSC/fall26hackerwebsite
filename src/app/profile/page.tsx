@@ -25,5 +25,5 @@ async function ProfileEditor() {
   if (!user) redirect("/login?next=/profile");
 
   const profile = await getProfile(user.id);
-  return <ProfileForm profile={profile} defaultEmail={user.email} />;
+  return <ProfileForm profile={profile} userId={user.id} defaultEmail={user.email} />;
 }
