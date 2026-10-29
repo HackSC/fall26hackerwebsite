@@ -26,15 +26,32 @@ async function Person({ params }: Pick<PageProps<"/people/[id]">, "params">) {
 
   const p = await getProfile(id);
   if (!p) notFound();
+  const initials = p.name
+  .trim()
+  .split(/\s+/)
+  .slice(0, 2)
+  .map((word) => word[0]?.toUpperCase() ?? "")
+  .join("");
 
   return (
     <article className="card mt-4 space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{p.name}</h1>
-          <p className="text-muted">
-            {p.usc_year} · {p.major}
-          </p>
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gray-200 text-lg font-medium text-gray-500">
+            {initials}
+          </div>
+
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {p.name}
+            </h1>
+            <p className="mt-1 text-sm font-medium">
+              {roleLabel(p.role)}
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              {p.usc_year} · {p.major}
+            </p>
+          </div>
         </div>
         {p.id === user.id ? (
           <Link href="/profile" className="btn-ghost">
