@@ -18,7 +18,7 @@ export function Avatar({
   return (
     <span
       aria-hidden
-      className={`${className} flex shrink-0 items-center justify-center rounded-full bg-foreground/10 font-medium text-muted`}
+      className={`${className} flex shrink-0 items-center justify-center rounded-full bg-placeholder font-medium text-muted`}
     >
       {name?.trim().charAt(0).toUpperCase()}
     </span>

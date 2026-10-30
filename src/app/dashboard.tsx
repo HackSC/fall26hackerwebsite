@@ -2,8 +2,20 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { EventRow } from "@/lib/database.types";
-import { EVENT_TIME_ZONE } from "@/lib/constants";
+import type { EventKind, EventRow } from "@/lib/database.types";
+import { EVENT_KIND_LABELS, EVENT_TIME_ZONE } from "@/lib/constants";
+
+// Figma's event/* tokens; deadline borrows the coral status dot.
+const KIND_DOT: Record<EventKind, string> = {
+  meal: "bg-gold",
+  treat: "bg-gold",
+  workshop: "bg-blue",
+  event: "bg-periwinkle",
+  deadline: "bg-coral",
+};
+const GLASS =
+  "rounded-card border border-white/70 bg-white/60 p-5 shadow-[0_8px_24px_rgb(0_0_0/0.06)] backdrop-blur-xl";
+const EYEBROW = "text-[11px] font-medium uppercase leading-4 tracking-wide";
 
 // The current time is only known in the browser, so everything time-relative
 // (countdown, "up next", highlighting) is computed here and ticks every second.
@@ -73,29 +85,29 @@ export function Dashboard({ events }: { events: EventRow[] }) {
   const nextFood = now === null ? undefined : events.find((e) => isFood(e) && end(e) > now);
 
   return (
-    <div className="relative grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-      {/* background glow behind the cards: red top-left, gold to the right of the ticket */}
+    <div className="relative isolate grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+      {/* Canvas / Glow: blue and cream behind the glass cards, Home only. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-16 -left-24 -z-10 h-80 w-[26rem] rounded-full bg-accent/50 blur-3xl"
+        className="pointer-events-none absolute -top-40 left-[10%] -z-10 h-96 w-[30rem] rounded-full bg-blue/40 blur-[120px]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute top-24 left-[30%] -z-10 h-64 w-72 rounded-full bg-gold/70 blur-3xl"
+        className="pointer-events-none absolute -top-32 left-[55%] -z-10 h-96 w-[30rem] rounded-full bg-cream/90 blur-[120px]"
       />
 
       <div className="space-y-4">
         <NextEventTicket event={nextEvent} now={now} />
 
         <div className="grid grid-cols-2 gap-4">
-          <section className="rounded-2xl bg-card p-5 shadow-sm">
-            <h2 className="text-xs uppercase tracking-wider">Next meal</h2>
+          <section className={GLASS}>
+            <h2 className={EYEBROW}>Next meal</h2>
             {now === null ? (
               <CardSkeleton />
             ) : nextFood ? (
               <>
-                <p className="mt-2 text-xl font-semibold">{nextFood.title}</p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-2 font-display text-xl font-medium">{nextFood.title}</p>
+                <p className="mt-1 text-xs">
                   {clock(nextFood.starts_at)}
                   {nextFood.location && ` · ${nextFood.location}`}
                 </p>
@@ -105,16 +117,16 @@ export function Dashboard({ events }: { events: EventRow[] }) {
             )}
           </section>
 
-          <section className="rounded-2xl bg-card p-5 shadow-sm">
-            <h2 className="text-xs uppercase tracking-wider">Submission deadline</h2>
+          <section className={GLASS}>
+            <h2 className={EYEBROW}>Submission deadline</h2>
             {now === null ? (
               <CardSkeleton />
             ) : deadline ? (
               <>
-                <p className="mt-2 text-xl font-semibold tabular-nums">
+                <p className="mt-2 font-mono text-2xl font-medium">
                   {shortCountdown(start(deadline) - now)}
                 </p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1 text-xs">
                   {shortDayFmt.format(new Date(deadline.starts_at))} {time(deadline.starts_at)}
                 </p>
               </>
@@ -128,7 +140,7 @@ export function Dashboard({ events }: { events: EventRow[] }) {
 
         <Link
           href="/people"
-          className="flex items-center gap-3 rounded-xl border border-foreground/60 bg-card px-4 py-3 transition hover:bg-foreground/5"
+          className="flex items-center gap-3 rounded-control bg-card px-4 py-3 shadow-[0_1px_3px_rgb(0_0_0/0.06)] transition hover:bg-surface-2"
         >
           <UsersIcon />
           <span className="flex-1">Hackers looking for a team</span>
@@ -161,7 +173,7 @@ function NextEventTicket({ event, now }: { event: EventRow | undefined; now: num
     <section className="relative flex">
       <div
         aria-hidden
-        className="absolute inset-0 rounded-[20px] border border-border bg-card"
+        className="absolute inset-0 rounded-ticket border border-white/70 bg-white/60 shadow-[0_8px_24px_rgb(0_0_0/0.06)] backdrop-blur-xl"
         style={{
           maskImage: notchMask,
           maskComposite: "intersect",
@@ -174,13 +186,13 @@ function NextEventTicket({ event, now }: { event: EventRow | undefined; now: num
       <span aria-hidden className={`${ring} bottom-0 translate-y-1/2`} style={{ left: ringLeft, clipPath: "inset(0 0 50% 0)" }} />
 
       <div className="relative min-w-0 flex-1 p-6">
-        <h2 className="text-xs uppercase tracking-wider">Next event</h2>
+        <h2 className={EYEBROW}>Next event</h2>
         {now === null ? (
           <CardSkeleton />
         ) : event ? (
           <>
-            <p className="mt-3 text-3xl font-bold leading-tight">{event.title}</p>
-            {event.location && <p className="mt-5">{event.location}</p>}
+            <p className="mt-3 font-display text-2xl font-bold">{event.title}</p>
+            {event.location && <p className="mt-4">{event.location}</p>}
           </>
         ) : (
           <p className="mt-3 text-muted">Nothing else on the schedule.</p>
@@ -194,12 +206,12 @@ function NextEventTicket({ event, now }: { event: EventRow | undefined; now: num
       >
         {now !== null && event && (
           <>
-            <span className="rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background">
+            <span className="rounded-full bg-ink px-2.5 py-0.5 text-[11px] font-medium text-white">
               {relativeLabel(start(event) - now)}
             </span>
-            <p className="text-3xl font-bold tabular-nums">{clock(event.starts_at)}</p>
+            <p className="font-mono text-2xl font-medium">{clock(event.starts_at)}</p>
             {event.ends_at && (
-              <p className="text-xs text-muted tabular-nums">to {clock(event.ends_at)}</p>
+              <p className="font-mono text-xs">to {clock(event.ends_at)}</p>
             )}
           </>
         )}
@@ -211,8 +223,8 @@ function NextEventTicket({ event, now }: { event: EventRow | undefined; now: num
 function CardSkeleton() {
   return (
     <div className="mt-3 space-y-2">
-      <div className="h-6 w-2/3 animate-pulse rounded bg-foreground/10" />
-      <div className="h-4 w-1/2 animate-pulse rounded bg-foreground/10" />
+      <div className="h-6 w-2/3 rounded bg-surface-2" />
+      <div className="h-4 w-1/2 rounded bg-surface-2" />
     </div>
   );
 }
@@ -234,10 +246,13 @@ function Schedule({ events, now }: { events: EventRow[]; now: number | null }) {
 
   return (
     <section>
-      <h2 className="text-2xl font-medium">Schedule</h2>
+      <h2 className="flex items-center gap-2 text-xl font-medium">
+        <span aria-hidden className="text-coral">✱</span>
+        Schedule
+      </h2>
 
       {dayNames.length > 0 && (
-        <div className="mt-4 flex gap-4" role="tablist">
+        <div className="mt-3 flex gap-4 font-display font-medium" role="tablist">
           {dayNames.map((day) => (
             <button
               key={day}
@@ -246,7 +261,7 @@ function Schedule({ events, now }: { events: EventRow[]; now: number | null }) {
               onClick={() => setPicked(day)}
               suppressHydrationWarning
               className={`transition ${
-                day === selected ? "font-medium text-foreground" : "text-muted hover:text-foreground"
+                day === selected ? "text-ink" : "text-muted hover:text-ink"
               }`}
             >
               {day}
@@ -264,26 +279,35 @@ function Schedule({ events, now }: { events: EventRow[]; now: number | null }) {
           return (
             <li
               key={e.id}
-              className={`relative flex gap-5 rounded-xl bg-card p-4 transition ${
-                live ? "my-6 shadow-lg" : "shadow-sm"
+              className={`relative flex gap-5 rounded-event bg-card p-4 transition ${
+                live
+                  ? "my-5 -translate-x-1 -translate-y-1 shadow-[4px_4px_16px_rgb(0_0_0/0.12)]"
+                  : "shadow-[0_1px_3px_rgb(0_0_0/0.06)]"
               } ${past ? "opacity-50" : ""}`}
             >
-              <div className="w-24 shrink-0 text-sm tabular-nums leading-7" suppressHydrationWarning>
-                <p>{time(e.starts_at)}{e.ends_at && " -"}</p>
-                {e.ends_at && <p>{time(e.ends_at)}</p>}
+              <div className="w-24 shrink-0" suppressHydrationWarning>
+                <p className="font-mono text-xs">
+                  {time(e.starts_at)}
+                  {e.ends_at && " -"}
+                </p>
+                {e.ends_at && <p className="font-mono text-xs">{time(e.ends_at)}</p>}
+                <p className="mt-3 flex items-center gap-1.5 text-[11px] leading-4">
+                  <span aria-hidden className={`size-1.5 rounded-full ${KIND_DOT[e.kind]}`} />
+                  {EVENT_KIND_LABELS[e.kind]}
+                </p>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-lg font-medium leading-snug">{e.title}</p>
-                {e.description && <p className="mt-1 text-sm">{e.description}</p>}
+                <p className="font-display text-base font-medium">{e.title}</p>
+                {e.description && <p className="mt-1 text-xs">{e.description}</p>}
                 {e.location && (
-                  <p className="mt-1 flex items-center gap-1.5 text-sm text-muted">
+                  <p className="mt-1 flex items-center gap-1.5 text-xs font-medium">
                     <PinIcon />
                     {e.location}
                   </p>
                 )}
               </div>
               {live && (
-                <span className="absolute top-3 right-3 rounded-full bg-foreground px-2.5 py-1 text-[11px] font-semibold uppercase text-background">
+                <span className="absolute top-3 right-3 rounded-full bg-ink px-2.5 py-0.5 text-[11px] font-medium uppercase text-white">
                   Now
                 </span>
               )}

@@ -7,7 +7,7 @@ import { Suspense } from "react";
 type Props = { href: string; children: React.ReactNode };
 
 const CLASSES =
-  "inline-flex min-h-11 items-center text-muted transition-colors duration-150 hover:text-ink aria-[current=page]:text-ink aria-[current=page]:underline aria-[current=page]:decoration-hibiscus aria-[current=page]:decoration-[3px] aria-[current=page]:underline-offset-[0.4em]";
+  "inline-flex min-h-11 items-center text-muted transition-colors duration-150 hover:text-ink aria-[current=page]:text-ink aria-[current=page]:underline aria-[current=page]:decoration-coral aria-[current=page]:decoration-[3px] aria-[current=page]:underline-offset-[0.4em]";
 
 // The pathname is runtime-only, so prerendering shows the plain link and streams in the active state.
 export function NavLink({ href, children }: Props) {

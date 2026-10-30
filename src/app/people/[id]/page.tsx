@@ -37,7 +37,7 @@ async function Person({ params }: Pick<PageProps<"/people/[id]">, "params">) {
     <article className="card mt-4 space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gray-200 text-lg font-medium text-gray-500">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-placeholder text-lg font-medium text-muted">
             {initials}
           </div>
 
@@ -59,7 +59,7 @@ async function Person({ params }: Pick<PageProps<"/people/[id]">, "params">) {
           </Link>
         ) : (
           <span
-            className={`chip ${p.team_status === "looking" ? "border-accent text-accent" : "text-muted"}`}
+            className={`chip ${p.team_status === "looking" ? "bg-lime text-ink" : "text-muted"}`}
           >
             {teamStatusLabel(p.team_status)}
           </span>

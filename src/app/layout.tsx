@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
+import { Hanken_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/auth";
@@ -10,18 +10,13 @@ import { signOut } from "@/app/auth/actions";
 import { NavLinks } from "./nav-links";
 import "./globals.css";
 
-const geistSans = Inter({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// Figma's three families: font/heading, font/body, font/mono.
+const heading = Hanken_Grotesk({ variable: "--font-heading", subsets: ["latin"] });
+const body = Inter({ variable: "--font-body", subsets: ["latin"] });
+const data = JetBrains_Mono({ variable: "--font-data", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI@USC",
+  title: "HackSC",
   description: "Schedule, countdown, and team formation for hackers.",
 };
 
@@ -29,17 +24,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${heading.variable} ${body.variable} ${data.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">
-        <header className="sticky top-0 z-10 border-b border-border bg-card">
+      <body className="flex min-h-full flex-col overflow-x-clip font-sans">
+        <header className="sticky top-0 z-10 border-b border-border bg-surface/70 backdrop-blur-xl">
           <nav className="mx-auto flex max-w-5xl items-center gap-8 px-4">
-            <Link href="/" className="text-lg font-bold tracking-tight">
-              AI@USC
+            <Link href="/" className="font-display text-xl font-bold">
+              HackSC
             </Link>
             <NavLinks />
             <div className="ml-auto text-sm">
-              <Suspense fallback={<div className="size-10 rounded-full bg-foreground/10" />}>
+              <Suspense fallback={<div className="size-10 rounded-full bg-placeholder" />}>
                 <AuthStatus />
               </Suspense>
             </div>
@@ -47,13 +42,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </header>
 
         {!isSupabaseConfigured && (
-          <div className="border-b border-gold/50 bg-gold/15 px-4 py-2 text-center text-sm">
+          <div className="border-b border-gold/50 bg-gold/15 px-4 py-2 text-center text-xs">
             Supabase isn&apos;t configured. Copy <code>.env.example</code> to{" "}
             <code>.env.local</code> and add your project URL and publishable key.
           </div>
         )}
 
-        <main className="mx-auto w-full max-w-5xl flex-1 overflow-x-clip px-4 py-8">{children}</main>
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
       </body>
     </html>
   );
@@ -74,7 +69,7 @@ async function AuthStatus() {
   return (
     <div className="flex items-center gap-3">
       <form action={signOut}>
-        <button type="submit" className="text-muted hover:text-foreground">
+        <button type="submit" className="text-xs font-medium text-muted hover:text-ink">
           Sign out
         </button>
       </form>

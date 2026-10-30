@@ -56,7 +56,7 @@ export function FilterBar({ filters }: { filters: PeopleFilters }) {
         />
         <span
           aria-hidden="true"
-          className="relative h-6 w-11 shrink-0 rounded-full bg-gray-300 transition-colors peer-checked:bg-[#DFFF70] peer-focus-visible:ring-2 peer-focus-visible:ring-[#DFFF70] after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5"
+          className="relative h-6 w-11 shrink-0 rounded-full bg-placeholder transition-colors peer-checked:bg-coral peer-focus-visible:ring-2 peer-focus-visible:ring-blue after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5"
         />
       </label>
 
@@ -82,8 +82,8 @@ export function FilterBar({ filters }: { filters: PeopleFilters }) {
               aria-current={filters.role === r.value ? "true" : undefined}
               className={`rounded-full border px-3 py-2 text-sm transition ${
                 filters.role === r.value
-                  ? "border-[#DFFF70] bg-[#DFFF70] text-black"
-                  : "border-border text-foreground hover:border-[#DFFF70]"
+                  ? "border-lime bg-lime text-ink"
+                  : "border-border text-foreground hover:border-lime"
               }`}
             >
               {r.label}
@@ -109,7 +109,7 @@ export function FilterBar({ filters }: { filters: PeopleFilters }) {
         <p className="text-sm text-muted">Ideal team size</p>
 
         <div className="relative">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[#171717]">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-ink">
             Size
           </span>
 
@@ -117,7 +117,7 @@ export function FilterBar({ filters }: { filters: PeopleFilters }) {
             name="size"
             defaultValue={filters.size}
             aria-label="Ideal team size"
-            className="w-full appearance-none rounded-xl border-0 bg-[#F0F0F4] py-4 pl-[50%] pr-10 text-sm text-[#171717] outline-none focus:ring-2 focus:ring-[#DFFF70]"
+            className="w-full appearance-none rounded-xl border-0 bg-surface-2 py-4 pl-[50%] pr-10 text-sm text-ink outline-none focus:ring-2 focus:ring-lime"
           >
             <option value="">Any</option>
             {TEAM_SIZES.filter((n) => [2, 3, 4].includes(n)).map((n) => (
@@ -127,7 +127,7 @@ export function FilterBar({ filters }: { filters: PeopleFilters }) {
             ))}
           </select>
 
-          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted">
             ↕
           </span>
         </div>
@@ -151,7 +151,7 @@ export function FilterBar({ filters }: { filters: PeopleFilters }) {
               }}
               className={`rounded-full border px-3 py-2 text-sm ${
                 filters.role === r.value
-                  ? "border-[#DFFF70] bg-[#DFFF70] text-black"
+                  ? "border-lime bg-lime text-ink"
                   : "border-border"
               }`}
             >

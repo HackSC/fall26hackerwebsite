@@ -101,7 +101,7 @@ export function ProfileForm({
               />
             </label>
             <p className="mt-1.5 text-xs text-muted">PNG, JPG, or WebP, up to 2 MB. Optional.</p>
-            {avatarError && <p className="mt-1 text-sm text-accent">{avatarError}</p>}
+            {avatarError && <p className="mt-1 text-sm text-danger">{avatarError}</p>}
           </div>
         </div>
         <Field label="Name" error={errors.name}>
@@ -186,7 +186,7 @@ export function ProfileForm({
                   defaultChecked={profile?.languages.includes(lang)}
                   className="peer sr-only"
                 />
-                <span className="chip py-1 text-sm peer-checked:border-accent peer-checked:bg-accent peer-checked:text-accent-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-accent/40">
+                <span className="chip py-1 text-sm peer-checked:bg-lime peer-checked:text-ink peer-focus-visible:ring-2 peer-focus-visible:ring-blue">
                   {lang}
                 </span>
               </label>
@@ -257,12 +257,12 @@ export function ProfileForm({
         {state.status === "saved" && (
           <p className="text-sm">
             {state.message}{" "}
-            <Link href="/people" className="text-accent underline">
+            <Link href="/people" className="text-link underline">
               Find teammates →
             </Link>
           </p>
         )}
-        {state.status === "error" && <p className="text-sm text-accent">{state.message}</p>}
+        {state.status === "error" && <p className="text-sm text-danger">{state.message}</p>}
       </div>
     </form>
   );
@@ -298,7 +298,7 @@ function Field({
         {hint && <span className="ml-2 font-normal text-muted">{hint}</span>}
       </div>
       {children}
-      {error && <p className="mt-1 text-sm text-accent">{error}</p>}
+      {error && <p className="mt-1 text-sm text-danger">{error}</p>}
     </div>
   );
 }
@@ -326,7 +326,7 @@ function RadioChip({
         required={required}
         className="peer sr-only"
       />
-      <span className="chip px-3 py-1.5 text-sm peer-checked:border-accent peer-checked:bg-accent peer-checked:text-accent-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-accent/40">
+      <span className="chip px-3 py-1.5 text-sm peer-checked:bg-lime peer-checked:text-ink peer-focus-visible:ring-2 peer-focus-visible:ring-blue">
         {label}
       </span>
     </label>

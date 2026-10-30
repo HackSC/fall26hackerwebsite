@@ -59,7 +59,7 @@ async function PeopleResults({ searchParams }: Pick<PageProps<"/people">, "searc
   return (
     <>
       {!myProfile && (
-        <div className="card mt-6 flex flex-wrap items-center justify-between gap-3 border-gold/60 bg-gold/10">
+        <div className="card mt-6 flex flex-wrap items-center justify-between gap-3 bg-lime">
           <p className="text-sm">You don&apos;t have a profile yet, so others can&apos;t find you.</p>
           <Link href="/profile" className="btn">
             Create profile
@@ -75,17 +75,17 @@ async function PeopleResults({ searchParams }: Pick<PageProps<"/people">, "searc
 
         <section className="min-w-0">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold tracking-tight">
-              <span className="mr-2 text-[#FF4D4D]">✶</span>
+            <h1 className="text-2xl font-bold">
+              <span className="mr-2 text-coral">✶</span>
               Nothing great is made alone.
             </h1>
 
             {error ? (
-              <p className="mt-1 text-sm text-muted">
+              <p className="mt-1 font-mono text-xs text-muted">
                 Hacker counts unavailable
               </p>
             ) : (
-              <p className="mt-1 text-sm text-muted">
+              <p className="mt-1 font-mono text-xs text-muted">
                 {profiles.length} matching hackers ·{" "}
                 {profiles.filter((p) => p.team_status === "looking").length} looking for a team
               </p>
@@ -93,7 +93,7 @@ async function PeopleResults({ searchParams }: Pick<PageProps<"/people">, "searc
           </div>
 
           {error ? (
-            <p className="card mt-6 text-sm text-accent">Couldn&apos;t load profiles: {error}</p>
+            <p className="card mt-6 text-sm text-danger">Couldn&apos;t load profiles: {error}</p>
           ) : (
             <>
               {profiles.length === 0 ? (
