@@ -11,22 +11,22 @@ export function ProfileCard({ profile: p, isMe }: { profile: Profile; isMe: bool
   .map((word) => word[0]?.toUpperCase() ?? "")
   .join("");
   return (
-    <article className="card flex h-full flex-col overflow-hidden border-0 bg-white text-[#1c1917] shadow-sm">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#E0E0E4] text-sm font-medium text-[#85858A]">
+    <article className="card flex h-full flex-col overflow-hidden">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-placeholder text-sm font-medium text-muted">
         {initials}
       </div>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <ProfileDetailModal profile={p} isMe={isMe} />
-          {isMe && <span className="chip ml-2 border-gold text-xs">You</span>}
-          <p className="mt-1 line-clamp-2 text-xs text-gray-500">
+          {isMe && <span className="chip ml-2 bg-lime text-xs">You</span>}
+          <p className="mt-1 line-clamp-2 text-xs text-muted">
             {p.usc_year} · {p.major}
           </p>
         </div>
       </div>
 
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <span className="chip border-transparent bg-[#F3F0EC] font-medium text-[#57534E]">
+        <span className="chip border-transparent bg-surface-2 font-medium text-ink">
           {roleLabel(p.role)}
         </span>
         {p.languages.map((l) => (
@@ -53,15 +53,15 @@ export function ProfileCard({ profile: p, isMe }: { profile: Profile; isMe: bool
         )}
       </div>      
       <div
-        className={`-mx-5 -mb-5 mt-4 rounded-b-2xl px-4 py-3 text-sm ${
+        className={`-mx-5 -mb-5 mt-4 px-4 py-3 text-xs ${
           p.team_status === "looking"
-            ? "bg-[#DFFF70] text-[#1c1917]"
-            : "bg-[#F5F5F5] text-gray-500"
+            ? "bg-lime text-ink"
+            : "bg-surface-2 text-muted"
         }`}
       >
         {p.team_status === "looking" ? (
           <>
-            <span className="mr-2 text-[#FF4D4D]">●</span>
+            <span className="mr-2 text-coral">●</span>
             Looking for a team
           </>
         ) : (

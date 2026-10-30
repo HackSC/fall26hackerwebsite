@@ -10,14 +10,19 @@ export function LoginForm({ next, error }: { next: string; error?: string }) {
   });
 
   if (state.status === "sent") {
-    return <p className="card mt-6 text-sm">{state.message}</p>;
+    return (
+      <div role="status" className="rise mt-10 max-w-md bg-surface p-6">
+        <p className="text-lead font-semibold">Check your inbox.</p>
+        <p className="mt-2 text-muted">{state.message}</p>
+      </div>
+    );
   }
 
   return (
-    <form action={action} className="card mt-6 space-y-4">
+    <form action={action} className="mt-10 max-w-md space-y-5">
       <input type="hidden" name="next" value={next} />
       <div>
-        <label htmlFor="email" className="label">
+        <label htmlFor="email" className="field-label">
           Email
         </label>
         <input
@@ -27,12 +32,18 @@ export function LoginForm({ next, error }: { next: string; error?: string }) {
           required
           autoComplete="email"
           placeholder="tommy@usc.edu"
+          aria-invalid={state.status === "error" || undefined}
+          aria-describedby={state.status === "error" ? "email-error" : undefined}
           className="input"
         />
       </div>
-      {state.status === "error" && <p className="text-sm text-accent">{state.message}</p>}
+      {state.status === "error" && (
+        <p id="email-error" role="alert" className="font-semibold text-danger">
+          {state.message}
+        </p>
+      )}
       <button type="submit" className="btn w-full" disabled={pending}>
-        {pending ? "Sending…" : "Send magic link"}
+        {pending ? "Sending…" : "Email me a magic link"}
       </button>
     </form>
   );

@@ -19,17 +19,18 @@ export function ContactLinks({
 
   return (
     <div className="flex flex-wrap gap-2">
-      <a href={`mailto:${profile.email}`} className="btn-ghost px-3 py-1" title={profile.email}>
+      <a href={`mailto:${profile.email}`} className="btn-quiet" title={profile.email}>
         Email
       </a>
       {profile.discord && (
         <button
           type="button"
           onClick={copyDiscord}
-          className="btn-ghost px-3 py-1"
+          className="btn-quiet"
           title="Copy Discord username"
+          aria-live="polite"
         >
-          {copied ? "Copied!" : `Discord: ${profile.discord}`}
+          {copied ? "Copied" : `Discord: ${profile.discord}`}
         </button>
       )}
       {profile.link && (
@@ -37,9 +38,10 @@ export function ContactLinks({
           href={profile.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-ghost px-3 py-1"
+          className="btn-quiet"
         >
-          Link ↗
+          Link <span aria-hidden="true">↗</span>
+          <span className="sr-only">(opens in a new tab)</span>
         </a>
       )}
     </div>

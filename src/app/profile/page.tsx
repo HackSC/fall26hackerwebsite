@@ -6,14 +6,16 @@ import { ProfileForm } from "./profile-form";
 
 export default function ProfilePage() {
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-semibold tracking-tight">Your profile</h1>
-      <p className="mt-1 text-sm text-muted">
-        Visible to other signed-in hackers on the People page so you can form teams.
-      </p>
-      <Suspense fallback={<div className="card mt-6 h-96 animate-pulse" />}>
-        <ProfileEditor />
-      </Suspense>
+    <div>
+      <div className="mx-auto max-w-2xl">
+        <h1 className="text-2xl font-bold">Edit profile</h1>
+        <p className="mt-1 text-xs text-muted">
+          Other signed-in hackers see this on the People page, so they know what you build and how to reach you.
+        </p>
+        <Suspense fallback={<div className="skeleton mt-6 h-96 rounded-card" />}>
+          <ProfileEditor />
+        </Suspense>
+      </div>
     </div>
   );
 }
