@@ -14,3 +14,12 @@ export function safeNextPath(value: unknown, fallback = "/"): string {
 export function firstParam(value: string | string[] | undefined): string {
   return (Array.isArray(value) ? value[0] : value) ?? "";
 }
+
+/**
+ * `value` if it is a plain file in this user's own folder of the public avatars
+ * bucket, else null. Restricting the filename blocks `../`, `%2e%2e`, queries and fragments.
+ */
+export function ownAvatarUrl(value: string, supabaseUrl: string, userId: string): string | null {
+  const prefix = `${supabaseUrl}/storage/v1/object/public/avatars/${userId}/`;
+  return value.startsWith(prefix) && /^[\w-]+\.\w+$/.test(value.slice(prefix.length)) ? value : null;
+}
