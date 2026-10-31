@@ -36,8 +36,10 @@ export async function saveEvent(_prev: EventFormState, formData: FormData): Prom
 
 export async function deleteEvent(formData: FormData) {
   await requireOrganizer("/admin");
+  const id = Number(formData.get("id"));
+  if (!(Number.isSafeInteger(id) && id > 0)) redirect("/admin"); // only a tampered form gets here
   const supabase = await createClient();
-  const { error } = await supabase.from("events").delete().eq("id", Number(formData.get("id")));
+  const { error } = await supabase.from("events").delete().eq("id", id);
   if (error) throw new Error(`Couldn't delete the event: ${error.message}`);
   updateTag("events");
   redirect("/admin");

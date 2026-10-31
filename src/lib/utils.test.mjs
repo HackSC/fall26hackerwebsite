@@ -7,7 +7,7 @@ test("safeNextPath keeps same-origin paths", () => {
 });
 
 test("safeNextPath rejects off-site and malformed values", () => {
-  for (const bad of ["//evil.com", "/\\evil.com", "/\\\\evil.com", "https://evil.com", "evil", 42, null, undefined]) {
+  for (const bad of ["//evil.com", "/\\evil.com", "/\\\\evil.com", "/\t/evil.com", "/\n/evil.com", "/\r/evil.com", "/\x00x", "https://evil.com", "evil", 42, null, undefined]) {
     assert.equal(safeNextPath(bad), "/", String(bad));
   }
 });

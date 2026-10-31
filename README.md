@@ -64,7 +64,7 @@ npx supabase test db      # pgTAP database tests in supabase/tests/ (needs local
 - **`checkin_codes`**: one random code per event, created by a trigger. Only organizers can read it.
 - **`checkins`**: who checked in to what. Written only by the `check_in(event_id, code)` function, which checks the code, the time window (30 minutes before start until 30 minutes after end, or 90 minutes after start when there's no end) and that the hacker has a profile. Hackers see their own rows; organizers see all.
 
-The home page caches the schedule for about a minute (`"use cache"` + `cacheLife("minutes")` in `src/lib/data.ts`). Saving or deleting an event at `/admin` refreshes it right away (`updateTag("events")`). Edits made elsewhere (Table Editor, SQL) show up within a minute.
+The home page caches the schedule for about a minute (`"use cache"` + `cacheLife("minutes")` in `src/lib/data.ts`). Saving or deleting an event at `/admin` refreshes it right away (`updateTag("events")`). Edits made elsewhere (Table Editor, SQL) show up within a minute, and until then a newly added event's QR and check-in pages can 404.
 
 ## Code map
 
