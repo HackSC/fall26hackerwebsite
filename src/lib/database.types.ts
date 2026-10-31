@@ -5,6 +5,7 @@
 export type EventKind = "event" | "workshop" | "meal" | "treat" | "deadline";
 export type DevRole = "frontend" | "backend" | "fullstack";
 export type TeamStatus = "looking" | "has_team";
+export type CheckinStatus = "ok" | "already" | "bad_code" | "closed" | "no_profile" | "signed_out";
 
 export type Database = {
   public: {
@@ -70,9 +71,38 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
         Relationships: [];
       };
+      organizers: {
+        Row: { user_id: string };
+        Insert: { user_id: string };
+        Update: { user_id?: string };
+        Relationships: [];
+      };
+      checkin_codes: {
+        Row: { event_id: number; code: string };
+        Insert: { event_id: number; code?: string };
+        Update: { event_id?: number; code?: string };
+        Relationships: [];
+      };
+      checkins: {
+        Row: { event_id: number; user_id: string; created_at: string };
+        Insert: { event_id: number; user_id: string };
+        Update: { event_id?: number; user_id?: string };
+        Relationships: [
+          {
+            foreignKeyName: "checkins_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      is_organizer: { Args: Record<string, never>; Returns: boolean };
+      check_in: { Args: { p_event_id: number; p_code: string }; Returns: CheckinStatus };
+    };
     Enums: {
       event_kind: EventKind;
       dev_role: DevRole;
@@ -85,3 +115,4 @@ export type Database = {
 export type EventRow = Database["public"]["Tables"]["events"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
+export type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
