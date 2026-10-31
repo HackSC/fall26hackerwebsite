@@ -2,8 +2,9 @@
 // directly (see event-form.test.mjs).
 import type { EventInsert, EventKind } from "./database.types";
 
-// Mirrors EVENT_KIND_LABELS in constants.ts. Kept here to stay import-free.
-const KINDS: readonly EventKind[] = ["event", "workshop", "meal", "treat", "deadline"];
+// Every EventKind, kept import-free. `satisfies` fails the build if the enum
+// gains or loses a kind and this list isn't updated.
+const KINDS = Object.keys({ event: 1, workshop: 1, meal: 1, treat: 1, deadline: 1 } satisfies Record<EventKind, 1>) as EventKind[];
 
 type Parts = Record<"year" | "month" | "day" | "hour" | "minute" | "second", string>;
 

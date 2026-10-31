@@ -18,6 +18,8 @@ const ERRORS: Record<Exclude<CheckinStatus, "ok" | "already">, string> = {
   signed_out: "Sign in first.",
 };
 
+const GENERIC_ERROR = "Something went wrong. Try again or ask an organizer.";
+
 export async function checkIn(_prev: CheckinState, formData: FormData): Promise<CheckinState> {
   const eventId = Number(formData.get("event_id"));
   const code = String(formData.get("code") ?? "");
@@ -30,9 +32,12 @@ export async function checkIn(_prev: CheckinState, formData: FormData): Promise<
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("check_in", { p_event_id: eventId, p_code: code });
-  if (error) return { status: "error", message: error.message };
+  if (error) {
+    console.error("check_in failed", error);
+    return { status: "error", message: GENERIC_ERROR };
+  }
 
   if (data === "ok") return { status: "done", message: "You're checked in. Have fun!" };
   if (data === "already") return { status: "done", message: "You're already checked in." };
-  return { status: "error", message: ERRORS[data], needsProfile: data === "no_profile" };
+  return { status: "error", message: ERRORS[data] ?? GENERIC_ERROR, needsProfile: data === "no_profile" };
 }

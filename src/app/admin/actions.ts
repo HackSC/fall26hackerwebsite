@@ -15,12 +15,20 @@ export async function saveEvent(_prev: EventFormState, formData: FormData): Prom
   const parsed = parseEventForm(Object.fromEntries(formData), EVENT_TIME_ZONE);
   if (!parsed.ok) return { status: "error", message: "Fix the highlighted fields.", fieldErrors: parsed.errors };
 
-  const id = Number(formData.get("id"));
+  const gone: EventFormState = { status: "error", message: "That event doesn't exist anymore." };
+  const rawId = formData.get("id");
+  const id = rawId ? Number(rawId) : null;
+  if (id !== null && !(Number.isSafeInteger(id) && id > 0)) return gone;
+
   const supabase = await createClient();
-  const { error } = id
-    ? await supabase.from("events").update(parsed.event).eq("id", id)
-    : await supabase.from("events").insert(parsed.event);
-  if (error) return { status: "error", message: error.message };
+  if (id === null) {
+    const { error } = await supabase.from("events").insert(parsed.event);
+    if (error) return { status: "error", message: error.message };
+  } else {
+    const { data, error } = await supabase.from("events").update(parsed.event).eq("id", id).select("id");
+    if (error) return { status: "error", message: error.message };
+    if (!data.length) return gone;
+  }
 
   updateTag("events");
   redirect("/admin");

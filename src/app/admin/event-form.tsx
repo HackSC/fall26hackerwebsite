@@ -22,6 +22,8 @@ export function EventForm({ event }: { event: EventRow | null }) {
   return (
     <form
       className="mt-6 space-y-5"
+      // Submitting through a transition (instead of `<form action>`) stops React
+      // from resetting the inputs, so edits survive a validation error.
       onSubmit={(e) => {
         // Let the delete button run its own formAction; preventDefault would cancel it.
         if ((e.nativeEvent as SubmitEvent).submitter?.hasAttribute("data-delete")) return;

@@ -38,7 +38,7 @@ async function EventQr({ params }: Pick<PageProps<"/admin/events/[id]/qr">, "par
       <section>
         <h1 className="display text-title">{event.title}</h1>
         <p className="mt-2 text-muted">
-          Scan with your phone camera to check in. Works from 30 minutes before the start until 30 minutes after the end.
+          Scan with your phone camera to check in. Works from 30 minutes before the start until 30 minutes after the end (or 90 minutes after the start if there&apos;s no end time).
         </p>
         {/* eslint-disable-next-line @next/next/no-img-element -- inline SVG data URL, nothing to optimize */}
         <img
@@ -55,7 +55,7 @@ async function EventQr({ params }: Pick<PageProps<"/admin/events/[id]/qr">, "par
         {error && <p role="alert" className="mt-2 font-semibold text-danger">{error}</p>}
         <ul className="mt-4 divide-y divide-border">
           {checkins.map((c) => (
-            <li key={c.profiles?.id} className="flex justify-between gap-4 py-2 text-sm">
+            <li key={c.user_id} className="flex justify-between gap-4 py-2 text-sm">
               <span>{c.profiles?.name}</span>
               <span className="text-muted">{time.format(new Date(c.created_at))}</span>
             </li>

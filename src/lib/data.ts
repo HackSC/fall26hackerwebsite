@@ -104,7 +104,7 @@ export async function getAttendance(eventId: number) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("checkins")
-    .select("created_at, profiles(id, name)")
+    .select("user_id, created_at, profiles(id, name)")
     .eq("event_id", eventId)
     .order("created_at", { ascending: false });
   return { checkins: data ?? [], error: error?.message ?? null };

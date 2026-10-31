@@ -1,6 +1,9 @@
-/** Only allow same-origin relative redirects (blocks `//evil.com` and absolute URLs). */
+/**
+ * Only allow same-origin relative redirects. Blocks absolute URLs, `//evil.com`,
+ * and anything with `\` (browsers read `/\evil.com` as `//evil.com`).
+ */
 export function safeNextPath(value: unknown, fallback = "/"): string {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
     return fallback;
   }
   return value;
