@@ -51,6 +51,9 @@ create policy "Organizers can delete events"
   to authenticated
   using ((select public.is_organizer()));
 
+-- Supabase's default grants include these; TRUNCATE ignores RLS.
+revoke truncate, trigger, references on public.events from anon, authenticated;
+revoke insert, update, delete on public.events from anon;
 grant insert, update, delete on public.events to authenticated;
 
 -- ---------------------------------------------------------------------------
@@ -83,6 +86,8 @@ begin
   return null;
 end;
 $$;
+
+revoke execute on function public.events_create_checkin_code() from public, anon, authenticated;
 
 create trigger events_create_checkin_code
   after insert on public.events
