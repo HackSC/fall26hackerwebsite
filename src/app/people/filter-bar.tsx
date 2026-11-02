@@ -7,11 +7,11 @@ import type { PeopleFilters } from "@/lib/data";
 import { TEAM_SIZES, USC_YEARS } from "@/lib/constants";
 
 const ROLES = [
-  { label: "Frontend", value: "frontend", supportedInLive: true },
-  { label: "Backend", value: "backend", supportedInLive: true },
-  { label: "Design", value: "design", supportedInLive: false },
-  { label: "Mobile", value: "mobile", supportedInLive: false },
-  { label: "AI/ML", value: "ai-ml", supportedInLive: false },
+  { label: "Frontend", value: "frontend" },
+  { label: "Backend", value: "backend" },
+  { label: "Design", value: "design" },
+  { label: "Mobile", value: "mobile" },
+  { label: "AI/ML", value: "ai-ml" },
 ];
 
 export function FilterBar({
@@ -26,7 +26,6 @@ export function FilterBar({
   const clearLink = demoMode ? "/people?demo=1" : "/people";
 
   function roleLink(value: string) {
-    // Clicking a role adds/removes it; other selected roles remain active.
     const nextRoles = selectedRoles.includes(value)
       ? selectedRoles.filter((role) => role !== value)
       : [...selectedRoles, value];
@@ -59,9 +58,17 @@ export function FilterBar({
       }}
       className="space-y-6 px-1 py-2 text-[#252525]"
     >
-      {demoMode && <input type="hidden" name="demo" value="1" />}
+      {demoMode && (
+        <input type="hidden" name="demo" value="1" />
+      )}
+
       {selectedRoles.map((role) => (
-        <input key={role} type="hidden" name="role" value={role} />
+        <input
+          key={role}
+          type="hidden"
+          name="role"
+          value={role}
+        />
       ))}
 
       <div className="flex items-center justify-between gap-3">
@@ -73,8 +80,8 @@ export function FilterBar({
           Clear all
         </Link>
       </div>
-      
-      {/* Looking for team toggle */}
+
+      {/* Looking for team */}
       <label className="flex cursor-pointer items-center justify-between gap-3">
         <span className="min-w-0">
           <span className="block text-sm font-medium">
@@ -99,11 +106,12 @@ export function FilterBar({
         />
       </label>
 
+      {/* Role multi-select */}
       <div className="space-y-3">
         <p className="text-xs text-gray-500">Role</p>
+
         <div className="flex flex-wrap gap-2">
           {ROLES.map((role) => {
-            const enabled = demoMode || role.supportedInLive;
             const active = selectedRoles.includes(role.value);
 
             const className = `rounded-full border px-3 py-2 text-xs transition ${
@@ -112,7 +120,7 @@ export function FilterBar({
                 : "border-[#E5E5E5] bg-white/70 text-[#2D2D2D] hover:border-[#C6F14B]"
             }`;
 
-            return enabled ? (
+            return (
               <Link
                 key={role.value}
                 href={roleLink(role.value)}
@@ -121,19 +129,12 @@ export function FilterBar({
               >
                 {role.label}
               </Link>
-            ) : (
-              <span
-                key={role.value}
-                title="Requires backend role support"
-                className={`${className} cursor-not-allowed opacity-50`}
-              >
-                {role.label}
-              </span>
             );
           })}
         </div>
       </div>
 
+      {/* Ideal team size */}
       <div className="space-y-2">
         <label
           htmlFor="people-size"
@@ -168,6 +169,7 @@ export function FilterBar({
         </div>
       </div>
 
+      {/* Year / grade */}
       <div className="space-y-2">
         <label
           htmlFor="people-year"
