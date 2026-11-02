@@ -1,48 +1,79 @@
+
 "use client";
 
 import Form from "next/form";
 import Link from "next/link";
 import type { PeopleFilters } from "@/lib/data";
-import { LANGUAGES, ROLES, TEAM_SIZES, USC_YEARS } from "@/lib/constants";
+import { TEAM_SIZES, USC_YEARS } from "@/lib/constants";
 
-// A plain GET form: filters live in the URL, so results are shareable and the
-// back button works. Dropdowns apply immediately; search applies on Enter.
-export function FilterBar({ filters }: { filters: PeopleFilters }) {
-  
+const ROLES = [
+  { label: "Frontend", value: "frontend", supportedInLive: true },
+  { label: "Backend", value: "backend", supportedInLive: true },
+  { label: "Design", value: "design", supportedInLive: false },
+  { label: "Mobile", value: "mobile", supportedInLive: false },
+  { label: "AI/ML", value: "ai-ml", supportedInLive: false },
+];
+
+export function FilterBar({
+  filters,
+  demoMode = false,
+  selectedRole = "",
+}: {
+  filters: PeopleFilters;
+  demoMode?: boolean;
+  selectedRole?: string;
+}) {
+  const clearLink = demoMode ? "/people?demo=1" : "/people";
+
+  function roleLink(value: string) {
+    return {
+      pathname: "/people",
+      query: {
+        ...(demoMode ? { demo: "1" } : {}),
+        role: selectedRole === value ? "" : value,
+        status: filters.status,
+        size: filters.size,
+        year: filters.year,
+      },
+    };
+  }
+
   return (
     <Form
-      // Remount when the URL changes so the inputs reflect the current filters.
-      key={JSON.stringify(filters)}
+      key={`${filters.size}-${filters.year}-${selectedRole}-${demoMode}`}
       action="/people"
       replace
-      onChange={(e) => {
+      onChange={(event) => {
         if (
-          e.target instanceof HTMLSelectElement ||
-          (e.target instanceof HTMLInputElement &&
-            e.target.type === "checkbox")
-          ) { e.currentTarget.requestSubmit(); }
+          event.target instanceof HTMLSelectElement ||
+          (event.target instanceof HTMLInputElement &&
+            event.target.type === "checkbox")
+        ) {
+          event.currentTarget.requestSubmit();
+        }
       }}
-      className="space-y-5 p-2"
+      className="space-y-6 px-1 py-2 text-[#252525]"
     >
-    
-    <div className="flex items-center justify-between gap-3">
-      <h2 className="text-lg font-semibold">
-        Filters
-      </h2>
+      {demoMode && <input type="hidden" name="demo" value="1" />}
+      <input type="hidden" name="role" value={selectedRole} />
 
-      <Link href="/people" className="text-sm underline underline-offset-2">
-        Clear all
-      </Link>
-    </div>
-
-    
-      {/* Looking for team */}
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold">Filters</h2>
+        <Link
+          href={clearLink}
+          className="text-xs underline underline-offset-2 hover:opacity-70"
+        >
+          Clear all
+        </Link>
+      </div>
+      
+      {/* Looking for team toggle */}
       <label className="flex cursor-pointer items-center justify-between gap-3">
         <span className="min-w-0">
           <span className="block text-sm font-medium">
             Looking for team
           </span>
-          <span className="mt-1 block text-xs text-muted">
+          <span className="mt-1 block text-[11px] leading-4 text-gray-500">
             Only show hackers who need teammates
           </span>
         </span>
@@ -54,172 +85,113 @@ export function FilterBar({ filters }: { filters: PeopleFilters }) {
           defaultChecked={filters.status === "looking"}
           className="peer sr-only"
         />
+
         <span
           aria-hidden="true"
-          className="relative h-6 w-11 shrink-0 rounded-full bg-gray-300 transition-colors peer-checked:bg-[#DFFF70] peer-focus-visible:ring-2 peer-focus-visible:ring-[#DFFF70] after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5"
+          className="relative h-5 w-9 shrink-0 rounded-full bg-[#DFDFE3] transition peer-checked:bg-[#DFFF70] peer-focus-visible:ring-2 peer-focus-visible:ring-[#DFFF70] after:absolute after:left-[3px] after:top-[3px] after:h-3.5 after:w-3.5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-4"
         />
       </label>
 
-      {/* Role */}
-      <input type="hidden" name="role" value={filters.role} />
-
       <div className="space-y-3">
-        <p className="text-sm text-muted">Role</p>
-
+        <p className="text-xs text-gray-500">Role</p>
         <div className="flex flex-wrap gap-2">
-          {ROLES.filter(
-            (r) => r.value === "frontend" || r.value === "backend"
-          ).map((r) => (
-            <Link
-              key={r.value}
-              href={{
-                pathname: "/people",
-                query: {
-                  ...filters,
-                  role: filters.role === r.value ? "" : r.value,
-                },
-              }}
-              aria-current={filters.role === r.value ? "true" : undefined}
-              className={`rounded-full border px-3 py-2 text-sm transition ${
-                filters.role === r.value
-                  ? "border-[#DFFF70] bg-[#DFFF70] text-black"
-                  : "border-border text-foreground hover:border-[#DFFF70]"
-              }`}
-            >
-              {r.label}
-            </Link>
-          ))}
+          {ROLES.map((role) => {
+            const enabled = demoMode || role.supportedInLive;
+            const active = selectedRole === role.value;
 
-          {["Design", "Mobile", "AI/ML"].map((role) => (
-            <button
-              key={role}
-              type="button"
-              disabled
-              title="Role filtering is not supported yet"
-              className="cursor-not-allowed rounded-full border border-border px-3 py-2 text-sm text-foreground"
-            >
-              {role}
-            </button>
-          ))}
+            const className = `rounded-full border px-3 py-2 text-xs transition ${
+              active
+                ? "border-[#DFFF70] bg-[#DFFF70] text-[#171717]"
+                : "border-[#E5E5E5] bg-white/70 text-[#2D2D2D] hover:border-[#C6F14B]"
+            }`;
+
+            return enabled ? (
+              <Link
+                key={role.value}
+                href={roleLink(role.value)}
+                aria-current={active ? "page" : undefined}
+                className={className}
+              >
+                {role.label}
+              </Link>
+            ) : (
+              <span
+                key={role.value}
+                title="Requires backend role support"
+                className={`${className} cursor-not-allowed opacity-50`}
+              >
+                {role.label}
+              </span>
+            );
+          })}
         </div>
       </div>
 
-      {/* Ideal team size */}
-      <div className="space-y-3">
-        <p className="text-sm text-muted">Ideal team size</p>
+      <div className="space-y-2">
+        <label
+          htmlFor="people-size"
+          className="block text-xs text-gray-500"
+        >
+          Ideal team size
+        </label>
 
         <div className="relative">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[#171717]">
-            Size
-          </span>
-
           <select
+            id="people-size"
             name="size"
             defaultValue={filters.size}
-            aria-label="Ideal team size"
-            className="w-full appearance-none rounded-xl border-0 bg-[#F0F0F4] py-4 pl-[50%] pr-10 text-sm text-[#171717] outline-none focus:ring-2 focus:ring-[#DFFF70]"
+            className="w-full appearance-none rounded-xl border-0 bg-[#F1F1F5] px-3 py-3 text-sm text-[#272727] outline-none focus:ring-2 focus:ring-[#DFFF70]"
           >
             <option value="">Any</option>
-            {TEAM_SIZES.filter((n) => [2, 3, 4].includes(n)).map((n) => (
-              <option key={n} value={String(n)}>
-                {n}
+            {TEAM_SIZES.filter((size) =>
+              [2, 3, 4].includes(size)
+            ).map((size) => (
+              <option key={size} value={String(size)}>
+                {size} people
               </option>
             ))}
           </select>
 
-          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-            ↕
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+          >
+            ⌄
           </span>
         </div>
       </div>
-      {/* Existing filters remain below the Figma filters */}
-      <div className="space-y-3 border-t border-border pt-5">
-        <p className="text-sm font-medium">Additional filters</p>        
-        {/*full-stack checker - end*/}
-        <div className="flex flex-wrap gap-2">
-          {ROLES.filter(
-            (r) => r.value !== "frontend" && r.value !== "backend"
-          ).map((r) => (
-            <Link
-              key={r.value}
-              href={{
-                pathname: "/people",
-                query: {
-                  ...filters,
-                  role: filters.role === r.value ? "" : r.value,
-                },
-              }}
-              className={`rounded-full border px-3 py-2 text-sm ${
-                filters.role === r.value
-                  ? "border-[#DFFF70] bg-[#DFFF70] text-black"
-                  : "border-border"
-              }`}
-            >
-              {r.label}
-            </Link>
-          ))}
-        </div>
-        <div className="flex flex-col gap-2">
-          <input
-            type="search"
-            name="q"
-            defaultValue={filters.q}
-            placeholder="Search people..."
-            aria-label="Search people"
-            className="input"
-          />
-          <button type="submit" className="btn">
-            Search
-          </button>
-        </div>
 
-        <Select name="lang" value={filters.lang} label="Any language">
-          {LANGUAGES.map((l) => (
-            <option key={l} value={l}>
-              {l}
-            </option>
-          ))}
-        </Select>
-
-        <Select name="year" value={filters.year} label="Any year">
-          {USC_YEARS.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </Select>
-
-        <select
-          name="sort"
-          defaultValue={filters.sort}
-          aria-label="Sort"
-          className="input"
+      <div className="space-y-2">
+        <label
+          htmlFor="people-year"
+          className="block text-xs text-gray-500"
         >
-          <option value="newest">Newest first</option>
-          <option value="name">Name A–Z</option>
-          <option value="size">Team size</option>
-        </select>
-      </div>
-  
-    </Form>
-  );
-}
+          Year / grade
+        </label>
 
-function Select({
-  name,
-  value,
-  label,
-  children,
-}: {
-  name: string;
-  value: string;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <select name={name} defaultValue={value} aria-label={label} className="input">
-      <option value="">{label}</option>
-      {children}
-    </select>
+        <div className="relative">
+          <select
+            id="people-year"
+            name="year"
+            defaultValue={filters.year}
+            className="w-full appearance-none rounded-xl border-0 bg-[#F1F1F5] px-3 py-3 text-sm text-[#272727] outline-none focus:ring-2 focus:ring-[#DFFF70]"
+          >
+            <option value="">Any</option>
+            {USC_YEARS.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+          >
+            ⌄
+          </span>
+        </div>
+      </div>
+    </Form>
   );
 }
