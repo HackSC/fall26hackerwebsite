@@ -17,20 +17,25 @@ const ROLES = [
 export function FilterBar({
   filters,
   demoMode = false,
-  selectedRole = "",
+  selectedRoles = [],
 }: {
   filters: PeopleFilters;
   demoMode?: boolean;
-  selectedRole?: string;
+  selectedRoles?: string[];
 }) {
   const clearLink = demoMode ? "/people?demo=1" : "/people";
 
   function roleLink(value: string) {
+    // Clicking a role adds/removes it; other selected roles remain active.
+    const nextRoles = selectedRoles.includes(value)
+      ? selectedRoles.filter((role) => role !== value)
+      : [...selectedRoles, value];
+
     return {
       pathname: "/people",
       query: {
         ...(demoMode ? { demo: "1" } : {}),
-        role: selectedRole === value ? "" : value,
+        role: nextRoles,
         status: filters.status,
         size: filters.size,
         year: filters.year,
@@ -40,7 +45,7 @@ export function FilterBar({
 
   return (
     <Form
-      key={`${filters.size}-${filters.year}-${selectedRole}-${demoMode}`}
+      key={`${filters.size}-${filters.year}-${filters.status}-${selectedRoles.join(",")}-${demoMode}`}
       action="/people"
       replace
       onChange={(event) => {
@@ -55,7 +60,9 @@ export function FilterBar({
       className="space-y-6 px-1 py-2 text-[#252525]"
     >
       {demoMode && <input type="hidden" name="demo" value="1" />}
-      <input type="hidden" name="role" value={selectedRole} />
+      {selectedRoles.map((role) => (
+        <input key={role} type="hidden" name="role" value={role} />
+      ))}
 
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold">Filters</h2>
@@ -97,7 +104,7 @@ export function FilterBar({
         <div className="flex flex-wrap gap-2">
           {ROLES.map((role) => {
             const enabled = demoMode || role.supportedInLive;
-            const active = selectedRole === role.value;
+            const active = selectedRoles.includes(role.value);
 
             const className = `rounded-full border px-3 py-2 text-xs transition ${
               active

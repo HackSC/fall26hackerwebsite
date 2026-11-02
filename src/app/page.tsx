@@ -7,7 +7,7 @@ export default async function Home() {
   return (
     <>
       {error && (
-        <p className="card mb-6 text-sm text-accent">
+        <p className="mb-6 rounded-2xl border border-accent/30 bg-card p-4 text-sm text-accent">
           Couldn&apos;t load the schedule: {error}. Did you run the migration in{" "}
           <code>supabase/migrations</code>?
         </p>

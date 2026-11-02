@@ -40,6 +40,7 @@ export type Database = {
           email: string;
           discord: string | null;
           link: string | null;
+          avatar_url: string | null;
           skills: string[];
           languages: string[];
           role: DevRole;
@@ -58,6 +59,7 @@ export type Database = {
           email: string;
           discord?: string | null;
           link?: string | null;
+          avatar_url?: string | null;
           skills?: string[];
           languages?: string[];
           role: DevRole;

@@ -23,6 +23,7 @@ export const demoProfiles: DirectoryProfile[] = [
     email: "tommy@example.com",
     discord: "tommy.demo",
     link: null,
+    avatar_url: null,
     skills: ["React", "Next.js", "Figma"],
     languages: ["TypeScript", "JavaScript", "Python"],
     role: "frontend",
@@ -47,6 +48,7 @@ export const demoProfiles: DirectoryProfile[] = [
     email: "trojan@example.com",
     discord: "trojan.demo",
     link: null,
+    avatar_url: null,
     skills: ["FastAPI", "Machine Learning", "PostgreSQL"],
     languages: ["Python", "SQL"],
     role: "backend",
@@ -67,22 +69,27 @@ export const demoProfiles: DirectoryProfile[] = [
 export function filterDemoProfiles(
   profiles: DirectoryProfile[],
   filters: PeopleFilters,
-  selectedRole: string,
+  selectedRoles: readonly string[],
 ): DirectoryProfile[] {
   const query = filters.q.trim().toLowerCase();
-  const selected = selectedRole.toLowerCase();
+  const selected = selectedRoles.map((role) => role.toLowerCase());
 
   const filtered = profiles.filter((p) => {
-    if (selected) {
-      const roleAliases = selected === "fullstack"
-        ? ["fullstack", "full-stack"]
-        : selected === "ai-ml"
+    if (selected.length > 0) {
+      // OR behavior: match at least one selected role.
+      const selectedNames = selected.flatMap((role) =>
+        role === "ai-ml"
           ? ["ai/ml", "ai-ml"]
-          : [selected];
-
-      const roles = (p.uiRoles ?? [p.role]).map((r) => r.toLowerCase());
-
-      if (!roles.some((r) => roleAliases.includes(r))) return false;
+          : role === "fullstack"
+            ? ["fullstack", "full-stack"]
+            : [role]
+      );
+      const profileRoles = (p.uiRoles ?? [p.role]).map((role) =>
+        role.toLowerCase()
+      );
+      if (!profileRoles.some((role) => selectedNames.includes(role))) {
+        return false;
+      }
     }
 
     if (filters.status && p.team_status !== filters.status) return false;

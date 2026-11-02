@@ -1,64 +1,360 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   HackSC Fall '26 design system. Docs: docs/design-system.md
+   Three layers: primitives (raw brand values) -> semantic roles -> components.
+   Components and pages use semantic roles only, never primitives or hex.
+   ========================================================================== */
+
+/* 1. Primitives: the Figma file's palette (HackSC Design > Foundations). */
 :root {
-  --background: #faf8f5;
-  --foreground: #1c1917;
-  --card: #ffffff;
-  --muted: #78716c;
-  --border: #e7e5e4;
-  --accent: #990000;
-  --accent-foreground: #ffffff;
-  --gold: #ffcc00;
+  --hsc-coral: #ff514f;
+  --hsc-lime: #ddfc75;
+  --hsc-yellow-100: #fceec0;
+  --hsc-yellow-400: #f8d35b;
+  --hsc-yellow-700: #d4ae3a;
+  --hsc-cream-50: #fef7e5;
+  --hsc-cream-200: #ffe4b9;
+  --hsc-blue-600: #1942e3;
+  --hsc-blue-800: #0d288b;
+  --hsc-periwinkle: #99aff2;
+  --hsc-red-600: #d70015;
+  --hsc-neutral-0: #ffffff;
+  --hsc-neutral-25: #f6f6f8;
+  --hsc-neutral-50: #f2f2f7;
+  --hsc-neutral-100: #ebebeb;
+  --hsc-neutral-200: #d9d9de;
+  --hsc-neutral-300: #d0d0d0;
+  --hsc-neutral-400: #9a9a9a;
+  --hsc-neutral-600: #5f5f5f;
+  --hsc-neutral-900: #1a1a1a;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f0e0d;
-    --foreground: #f5f5f4;
-    --card: #1c1a19;
-    --muted: #a8a29e;
-    --border: #2e2b29;
-    --accent: #e0484a;
-    --accent-foreground: #ffffff;
-    --gold: #ffd84d;
-  }
+/* 2. Semantic roles: Figma's functional tokens. One theme; the file defines no dark mode. */
+:root {
+  color-scheme: light;
+  --ground: var(--hsc-neutral-25); /* bg/page */
+  --surface: var(--hsc-neutral-0); /* surface/card */
+  --surface-2: var(--hsc-neutral-50); /* surface/field */
+  --ink: var(--hsc-neutral-900); /* text/primary */
+  --muted: var(--hsc-neutral-600); /* text/secondary */
+  --hint: var(--hsc-neutral-400); /* text/hint */
+  --action: var(--hsc-coral); /* action/primary */
+  --on-action: var(--hsc-neutral-900); /* Figma's own fallback: white on coral is 3.2:1 */
+  --link: var(--hsc-blue-600);
+  --danger: var(--hsc-red-600); /* text/error */
+  --focus: var(--hsc-blue-600);
+  --line: var(--hsc-neutral-100); /* line/divider */
+  --line-strong: var(--hsc-neutral-300); /* line/default */
 }
 
+/* Tailwind mapping: bg-ground, text-ink, bg-action, font-display, font-mono… */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
   --color-muted: var(--muted);
-  --color-border: var(--border);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-gold: var(--gold);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-hint: var(--hint);
+  --color-action: var(--action);
+  --color-on-action: var(--on-action);
+  --color-link: var(--link);
+  --color-danger: var(--danger);
+  --color-coral: var(--hsc-coral);
+  --color-lime: var(--hsc-lime);
+  --color-gold: var(--hsc-yellow-400);
+  --color-cream: var(--hsc-cream-200);
+  --color-blue: var(--hsc-blue-600);
+  --color-navy: var(--hsc-blue-800);
+  --color-periwinkle: var(--hsc-periwinkle);
+  --color-placeholder: var(--hsc-neutral-200);
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), var(--font-body), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-data), ui-monospace, monospace;
+
+  /* Names used by the pages merged from main (#1, #3), pointed at the roles above. */
+  --color-background: var(--ground);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-border: var(--line);
+  --color-accent: var(--action);
+  --color-accent-foreground: var(--on-action);
+
+  /* Login keeps its big type; the app screens use Figma's 12–24px scale. */
+  --text-title: clamp(2.5rem, 6.5vw, 5.5rem);
+  --text-title--line-height: 0.95;
+  --text-lead: clamp(1.25rem, 2.2vw, 1.75rem);
+  --text-lead--line-height: 1.25;
+
+  --radius-event: 4px;
+  --radius-control: 12px;
+  --radius-ticket: 16px;
+  --radius-card: 20px;
+
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
+/* 3. Base */
+html {
+  background: var(--ground);
+  scroll-behavior: smooth;
+}
+
+/* Canvas / Dot grid: 14px grid of 1.2px dots at 55% on bg/page. */
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background:
+    radial-gradient(rgb(150 150 165 / 0.55) 1.2px, transparent 1.2px) 0 0 / 14px 14px,
+    var(--ground);
+  color: var(--ink);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
 }
 
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+::selection {
+  background: var(--hsc-lime);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* 4. Components */
 @layer components {
-  .card {
-    @apply rounded-2xl border border-border bg-card p-5;
+  .wrap {
+    width: 100%;
+    max-width: 90rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
   }
-  .label {
-    @apply mb-1.5 block text-sm font-medium;
+  @media (min-width: 640px) {
+    .wrap {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Display type: tight tracking and leading as it grows. */
+  .display {
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    font-feature-settings: "tnum";
+  }
+
+  /* Buttons: radius/control, label is the button style (16/20 medium). */
+  .btn {
+    border-radius: var(--radius-control);
+    font-size: 1rem;
+    line-height: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.625rem 1.25rem;
+    background: var(--action);
+    color: var(--on-action);
+    font-weight: 500;
+    transition:
+      transform 140ms var(--ease-out-strong),
+      background-color 200ms ease;
+  }
+  .btn-quiet {
+    border-radius: var(--radius-control);
+    border: 1px solid var(--line-strong);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.625rem 1rem;
+    background: var(--surface);
+    color: var(--ink);
+    font-weight: 500;
+    transition:
+      transform 140ms var(--ease-out-strong),
+      background-color 200ms ease;
+  }
+  .btn:active,
+  .btn-quiet:active {
+    transform: scale(0.97);
+  }
+  .btn:disabled,
+  .btn-quiet:disabled {
+    opacity: 0.55;
+    transform: none;
+    cursor: progress;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .btn:hover {
+      background: color-mix(in oklab, var(--action) 86%, var(--ink));
+    }
+    .btn-quiet:hover {
+      background: var(--surface-2);
+    }
+  }
+
+  .link {
+    color: var(--link);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+  }
+
+  /* Form fields: iOS-style grouped fields on surface/field. */
+  .field-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    color: var(--muted);
   }
   .input {
-    @apply w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-control);
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1.5rem;
+    border: 1px solid transparent;
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease;
   }
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-50;
+  .input::placeholder {
+    color: var(--hint);
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--focus);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus) 30%, transparent);
+  }
+
+  /* Tags and chips: pills on surface/field (tag style, 11/16 medium). */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1rem;
+    white-space: nowrap;
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+
+  /* Toggle chips for radio/checkbox groups (input is .peer.sr-only before it). */
+  .choice {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0.375rem 0.875rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      transform 140ms var(--ease-out-strong),
+      background-color 150ms ease,
+      color 150ms ease;
+  }
+  .choice:active {
+    transform: scale(0.97);
+  }
+
+  /* Loading placeholders: a static tone block, no looping pulse. */
+  /* Classes the pages merged from main use, as main defined them. */
+  /* surface/card: white, radius/card, soft shadow instead of a border. */
+  .card {
+    @apply rounded-card bg-card p-5 shadow-[0_1px_3px_rgb(0_0_0/0.06)];
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-medium text-muted;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-foreground/5;
+    @apply inline-flex items-center justify-center gap-2 rounded-control border border-[var(--line-strong)] bg-surface px-4 py-2 text-sm font-medium transition hover:bg-surface-2;
   }
   .chip {
-    @apply inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-xs;
+    @apply inline-flex items-center rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] leading-4 font-medium;
+  }
+  .skeleton {
+    background: var(--surface-2);
+  }
+}
+
+/* 5. Motion. Entrances run once; transform and opacity only. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+@keyframes digit-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.18em);
+  }
+}
+
+/* Stagger with style={{ "--i": n }}. Content is visible even if animations never run. */
+.rise {
+  animation: rise 700ms var(--ease-out-strong) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+.digit-in {
+  display: inline-block;
+  animation: digit-in 220ms var(--ease-out-strong);
+}
+/* Slow bob for the hero hibiscus; the only looping motion on the site. */
+@keyframes float {
+  50% {
+    transform: translateY(-10px) rotate(-2deg);
+  }
+}
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .rise {
+    animation: fade 300ms ease both;
+  }
+  .digit-in,
+  .float {
+    animation: none;
+  }
+  .btn:active,
+  .btn-quiet:active,
+  .choice:active {
+    transform: none;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
   }
 }

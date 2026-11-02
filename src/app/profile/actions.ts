@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import type { DevRole, ProfileInsert, TeamStatus } from "@/lib/database.types";
 import { ROLES, TEAM_STATUSES, USC_YEARS } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/server";
+import { supabaseUrl } from "@/lib/supabase/env";
 
 export type ProfileFormState = {
   status: "idle" | "saved" | "error";
@@ -57,6 +58,12 @@ export async function saveProfile(
   const linkInput = text("link");
   const link = normalizeLink(linkInput);
 
+  // The browser uploads the photo to Storage first; only accept URLs that point
+  // into this user's own folder of the avatars bucket.
+  const avatarInput = text("avatar_url");
+  const avatarPrefix = `${supabaseUrl}/storage/v1/object/public/avatars/${user.id}/`;
+  const avatar_url = avatarInput.startsWith(avatarPrefix) ? avatarInput : null;
+
   if (!name) fieldErrors.name = "Name is required.";
   if (!USC_YEARS.includes(usc_year as (typeof USC_YEARS)[number])) fieldErrors.usc_year = "Pick a year.";
   if (!major) fieldErrors.major = "Major is required.";
@@ -83,6 +90,8 @@ export async function saveProfile(
     looking_for: text("looking_for").slice(0, 1000) || null,
     team_size_pref: teamSize ? Number(teamSize) : null,
     team_status,
+    // Omit when unchanged so an existing photo isn't wiped.
+    ...(avatar_url && { avatar_url }),
   };
 
   const supabase = await createClient();
