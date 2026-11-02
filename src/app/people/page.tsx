@@ -136,14 +136,7 @@ async function PeopleResults({
       ]);
 
   return (
-    <div
-      className="min-h-[calc(100vh-6rem)] pb-12"
-      style={{
-        backgroundImage:
-          "radial-gradient(#e9e6e2 0.7px, transparent 0.7px)",
-        backgroundSize: "15px 15px",
-      }}
-    >
+    <div className="min-h-[calc(100vh-6rem)] pb-12">
       {!demoMode && !myProfile && (
         <div className="card mt-6 flex flex-wrap items-center justify-between gap-3 border-gold/60 bg-gold/10">
           <p className="text-sm">
