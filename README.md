@@ -33,7 +33,7 @@ npx supabase start        # prints a local URL + publishable key for .env.local
 npx supabase db reset     # applies migrations + seed.sql
 ```
 
-Magic-link emails show up in Mailpit at http://127.0.0.1:54324.
+Sign-in code emails show up in Mailpit at http://127.0.0.1:57324.
 
 ### Tests
 
@@ -50,7 +50,7 @@ npx supabase test db      # pgTAP database tests in supabase/tests/ (needs local
 | `/people` | Searchable, filterable, sortable list of hacker profiles with email / Discord / link. Requires sign-in. |
 | `/people/[id]` | A single hacker's full profile. |
 | `/profile` | Create or edit your own profile. |
-| `/login` | Email magic-link sign-in. |
+| `/login` | Email sign-in: enter your email, then the code we email you. |
 | `/admin` | Organizers only: add, edit and delete schedule events, and open each event's check-in QR. |
 | `/admin/events/[id]/qr` | Full-screen-ish QR for an event plus who has checked in. Put it on a screen at the door. |
 | `/checkin/[eventId]/[code]` | What the QR opens. Hackers tap "Check me in". |
@@ -79,7 +79,7 @@ src/
   app/dashboard.tsx         home page countdown + schedule (client)
   app/people/               directory, filters, profile cards, detail page
   app/profile/              profile form + saveProfile server action
-  app/auth/                 magic-link action, sign-out, /auth/callback code exchange
+  app/auth/                 sign-in-with-code action, sign-out
   app/admin/                organizer schedule editor + check-in QR page
   app/checkin/              hacker check-in page + checkIn server action
   lib/event-form.ts         event form parsing, LA time <-> UTC conversion
@@ -92,5 +92,6 @@ supabase/
 ## Notes
 
 - Supabase's built-in email sender is heavily rate-limited (a few emails per hour). Configure custom SMTP under Authentication → Emails before the event.
-- Scanning the QR with a real phone needs the site on a public HTTPS URL, and that URL (plus `/**`) must be in Supabase Auth's Redirect URLs, or the sign-in link drops the check-in page.
-- To restrict sign-ups to `@usc.edu`, add a check in `sendMagicLink` (`src/app/auth/actions.ts`) and/or a Supabase Auth hook.
+- Scanning the QR with a real phone needs the site on a public HTTPS URL.
+- Sign-in emails send a code, not a link, because mail scanners open links before people do and use up the one-time token. The templates live in `supabase/templates/`. Local Supabase reads them from `config.toml`. On the shared project, paste them into Authentication → Email Templates ("Magic Link" and "Confirm signup", with subject "Your HackSC sign-in code"), and do it again whenever the files change.
+- To restrict sign-ups to `@usc.edu`, add a check in `signInWithCode` (`src/app/auth/actions.ts`) and/or a Supabase Auth hook.
