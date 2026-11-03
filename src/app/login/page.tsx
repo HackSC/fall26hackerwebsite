@@ -11,7 +11,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
       <div className="lg:col-span-6 lg:pt-8">
         <h1 className="display rise text-title">Sign in to find your team.</h1>
         <p className="rise mt-5 max-w-md text-lead text-muted" style={{ "--i": 1 } as React.CSSProperties}>
-          We&apos;ll email you a magic link. No password to remember at 3am.
+          We&apos;ll email you a sign-in code. No password to remember at 3am.
         </p>
         <Suspense fallback={<div className="skeleton mt-10 h-44 max-w-md" />}>
           <Login searchParams={searchParams} />

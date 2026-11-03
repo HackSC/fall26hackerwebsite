@@ -244,6 +244,16 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Sign-in emails carry a code, not a link: mail scanners open links and burn the one-time token.
+# On the shared project, paste the same files into Auth -> Email Templates (Magic Link and Confirm signup).
+[auth.email.template.magic_link]
+subject = "Your HackSC sign-in code"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "Your HackSC sign-in code"
+content_path = "./supabase/templates/confirmation.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

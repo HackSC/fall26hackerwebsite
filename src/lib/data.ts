@@ -76,3 +76,36 @@ export async function searchProfiles(filters: PeopleFilters) {
   const { data, error } = await query.limit(200);
   return { profiles: data ?? [], error: error?.message ?? null };
 }
+
+// ---------------------------------------------------------------------------
+// Organizers and check-in (per-user, RLS-scoped)
+// ---------------------------------------------------------------------------
+
+/** One event from the cached schedule. */
+export async function getEvent(id: number): Promise<EventRow | null> {
+  const { events } = await getSchedule();
+  return events.find((e) => e.id === id) ?? null;
+}
+
+export async function isOrganizer(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("is_organizer");
+  return data === true;
+}
+
+/** RLS returns nothing unless the caller is an organizer. */
+export async function getCheckinCode(eventId: number): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("checkin_codes").select("code").eq("event_id", eventId).maybeSingle();
+  return data?.code ?? null;
+}
+
+export async function getAttendance(eventId: number) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("checkins")
+    .select("user_id, created_at, profiles(id, name)")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+  return { checkins: data ?? [], error: error?.message ?? null };
+}
