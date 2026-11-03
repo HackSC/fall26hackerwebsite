@@ -13,7 +13,8 @@ export type ScheduleResult = { events: EventRow[]; error: string | null };
 export async function getSchedule(): Promise<ScheduleResult> {
   "use cache";
   cacheTag("events");
-  cacheLife("minutes");
+  // Organizers edit events in the dashboard; show changes within ~30s.
+  cacheLife({ stale: 30, revalidate: 30, expire: 3600 });
 
   if (!isSupabaseConfigured) return { events: [], error: null };
 
@@ -73,7 +74,7 @@ export async function searchProfiles(filters: PeopleFilters) {
       query = query.order("created_at", { ascending: false });
   }
 
-  const { data, error } = await query.limit(200);
+  const { data, error } = await query.limit(1000);
   return { profiles: data ?? [], error: error?.message ?? null };
 }
 
