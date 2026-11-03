@@ -8,7 +8,7 @@ import type { DirectoryProfile } from "./demo-profiles";
 function Avatar({ large = false }: { large?: boolean }) {
   return (
     <span
-      className={`flex shrink-0 items-center justify-center rounded-full bg-[#E2E2E6] text-[#9D9DA3] ${
+      className={`flex shrink-0 items-center justify-center rounded-full bg-placeholder text-hint ${
         large ? "h-14 w-14" : "h-10 w-10"
       }`}
     >
@@ -55,12 +55,12 @@ function ContactRow({
   onCopy: (value: string, label: string) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-[#EBEBEB] py-3 last:border-0">
+    <div className="flex items-center justify-between gap-4 border-b border-border py-3 last:border-0">
       <div className="min-w-0">
-        <p className="mb-1 text-[11px] text-[#8E8E8E]">
+        <p className="mb-1 text-[11px] text-hint">
           {label}
         </p>
-        <p className="break-all text-sm text-[#252525]">
+        <p className="break-all text-sm text-ink">
           {value || "Not provided"}
         </p>
       </div>
@@ -71,10 +71,10 @@ function ContactRow({
           onClick={() => onCopy(value, label)}
           aria-label={`Copy ${label.toLowerCase()}`}
           title={`Copy ${label}`}
-          className="flex shrink-0 items-center gap-1 rounded-md p-2 text-[#676767] hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-[#B5DD48]"
+          className="flex shrink-0 items-center gap-1 rounded-md p-2 text-muted hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-link"
         >
           {copied ? (
-            <span className="text-xs font-medium text-green-700">
+            <span className="text-xs font-medium text-link">
               Copied!
             </span>
           ) : (
@@ -137,7 +137,7 @@ export function ProfileDetailModal({
           type="button"
           onClick={openProfile}
           aria-label={`View ${p.name}'s profile`}
-          className="group flex h-[206px] w-full min-w-0 flex-col overflow-hidden rounded-2xl bg-white text-left text-[#222222] shadow-sm ring-1 ring-[#F1F1F1] transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-[#B5DD48]"
+          className="group flex h-[206px] w-full min-w-0 flex-col overflow-hidden rounded-2xl bg-surface text-left text-ink shadow-sm ring-1 ring-border transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-link"
         >
           <div className="flex min-h-0 w-full flex-1 flex-col px-3 pb-2 pt-3">
             <Avatar />
@@ -151,12 +151,12 @@ export function ProfileDetailModal({
               {roles}
             </p>
 
-            <p className="w-full truncate text-[11px] text-[#85858B]">
+            <p className="w-full truncate text-[11px] text-hint">
               {p.usc_year} · {p.major}
             </p>
 
             {looking && (
-              <p className="mt-auto w-full truncate pt-3 text-[11px] text-[#85858B]">
+              <p className="mt-auto w-full truncate pt-3 text-[11px] text-hint">
                 {p.cardNote ||
                   p.looking_for ||
                   "Looking for teammates"}
@@ -167,14 +167,14 @@ export function ProfileDetailModal({
           <div
             className={`flex h-9 w-full shrink-0 items-center gap-1.5 px-3 text-[11px] ${
               looking
-                ? "bg-[#DFFF70] text-[#2C2C2C]"
-                : "bg-[#FAFAFA] text-[#777777]"
+                ? "bg-lime text-ink"
+                : "bg-surface-2 text-muted"
             }`}
           >
             {looking && (
               <span
                 aria-hidden="true"
-                className="text-[12px] text-[#FF5151]"
+                className="text-[12px] text-coral"
               >
                 ●
               </span>
@@ -200,7 +200,7 @@ export function ProfileDetailModal({
             dialogRef.current?.close();
           }
         }}
-        className="fixed inset-0 m-auto max-h-[88vh] w-[min(92vw,440px)] overflow-y-auto rounded-2xl border-0 bg-white p-0 text-[#242424] shadow-2xl backdrop:bg-black/65"
+        className="fixed inset-0 m-auto max-h-[88vh] w-[min(92vw,440px)] overflow-y-auto rounded-2xl border-0 bg-surface p-0 text-ink shadow-2xl backdrop:bg-ink/65"
       >
         <div className="p-6">
           <div className="mb-4 flex justify-end">
@@ -208,7 +208,7 @@ export function ProfileDetailModal({
               type="button"
               aria-label="Close profile"
               onClick={() => dialogRef.current?.close()}
-              className="flex h-6 w-6 items-center justify-center rounded text-lg text-[#757575] hover:bg-gray-100"
+              className="flex h-6 w-6 items-center justify-center rounded text-lg text-muted hover:bg-surface-2"
             >
               ×
             </button>
@@ -226,7 +226,7 @@ export function ProfileDetailModal({
                 {roles}
               </p>
 
-              <p className="mt-1 text-xs text-[#828282]">
+              <p className="mt-1 text-xs text-hint">
                 {p.usc_year} · {p.major}
               </p>
             </div>
@@ -236,14 +236,14 @@ export function ProfileDetailModal({
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium ${
                 looking
-                  ? "bg-[#DFFF70] text-[#202020]"
-                  : "bg-[#F1F1F1] text-gray-600"
+                  ? "bg-lime text-ink"
+                  : "bg-surface-2 text-muted"
               }`}
             >
               {looking && (
                 <span
                   aria-hidden="true"
-                  className="text-[#FF5151]"
+                  className="text-coral"
                 >
                   ●
                 </span>
@@ -255,7 +255,7 @@ export function ProfileDetailModal({
           </div>
 
           <section className="mt-5">
-            <h3 className="mb-2 text-xs text-[#858585]">
+            <h3 className="mb-2 text-xs text-hint">
               Tech stack
             </h3>
 
@@ -264,13 +264,13 @@ export function ProfileDetailModal({
                 techStack.map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-full bg-[#F2F2F6] px-3 py-1 text-[11px] text-[#303030]"
+                    className="rounded-full bg-surface-2 px-3 py-1 text-[11px] text-ink"
                   >
                     {skill}
                   </span>
                 ))
               ) : (
-                <p className="text-sm text-[#858585]">
+                <p className="text-sm text-hint">
                   Not provided
                 </p>
               )}
@@ -279,7 +279,7 @@ export function ProfileDetailModal({
 
           <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
             <section className="min-w-0">
-              <h3 className="mb-2 text-xs text-[#858585]">
+              <h3 className="mb-2 text-xs text-hint">
                 Looking for
               </h3>
 
@@ -289,7 +289,7 @@ export function ProfileDetailModal({
             </section>
 
             <section className="min-w-0">
-              <h3 className="mb-2 text-xs text-[#858585]">
+              <h3 className="mb-2 text-xs text-hint">
                 Team
               </h3>
 
@@ -331,7 +331,7 @@ export function ProfileDetailModal({
             />
           </section>
 
-          <div className="mt-4 rounded-xl bg-[#FF4D4D] px-3 py-3 text-center text-xs font-medium text-white">
+          <div className="mt-4 rounded-xl bg-action px-3 py-3 text-center text-xs font-medium text-on-action">
             * Feature may be added later if needed.
           </div>
         </div>

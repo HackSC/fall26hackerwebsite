@@ -275,15 +275,15 @@ async function PeopleResults({
 
         <section className="min-w-0">
           <div className="mb-5">
-            <h1 className="text-2xl font-bold tracking-tight text-[#242424] sm:text-3xl">
-              <span className="mr-2 text-[#FF4D4D]">
+            <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+              <span className="mr-2 text-coral">
                 ✶
               </span>
               Nothing great is made alone.
             </h1>
 
             {!error && (
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted">
                 {profiles.length}{" "}
                 {demoMode
                   ? "demo profiles"
@@ -301,7 +301,7 @@ async function PeopleResults({
 
             {demoMode && (
               <div className="mt-2 flex items-center gap-3 text-xs">
-                <span className="rounded-full bg-[#DFFF70] px-2 py-1 font-medium text-[#202020]">
+                <span className="rounded-full bg-lime px-2 py-1 font-medium text-ink">
                   Demo preview · fictional data
                 </span>
 
@@ -316,7 +316,7 @@ async function PeopleResults({
           </div>
 
           {error ? null : profiles.length === 0 ? (
-            <p className="rounded-xl bg-white p-7 text-center text-sm text-gray-500">
+            <p className="rounded-xl bg-surface p-7 text-center text-sm text-muted">
               No one matches those filters.
             </p>
           ) : (

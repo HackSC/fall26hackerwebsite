@@ -56,7 +56,7 @@ export function FilterBar({
           event.currentTarget.requestSubmit();
         }
       }}
-      className="space-y-6 px-1 py-2 text-[#252525]"
+      className="space-y-6 px-1 py-2 text-ink"
     >
       {demoMode && (
         <input type="hidden" name="demo" value="1" />
@@ -87,7 +87,7 @@ export function FilterBar({
           <span className="block text-sm font-medium">
             Looking for team
           </span>
-          <span className="mt-1 block text-[11px] leading-4 text-gray-500">
+          <span className="mt-1 block text-[11px] leading-4 text-muted">
             Only show hackers who need teammates
           </span>
         </span>
@@ -102,13 +102,13 @@ export function FilterBar({
 
         <span
           aria-hidden="true"
-          className="relative h-5 w-9 shrink-0 rounded-full bg-[#DFDFE3] transition peer-checked:bg-[#DFFF70] peer-focus-visible:ring-2 peer-focus-visible:ring-[#DFFF70] after:absolute after:left-[3px] after:top-[3px] after:h-3.5 after:w-3.5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-4"
+          className="relative h-5 w-9 shrink-0 rounded-full bg-placeholder transition peer-checked:bg-lime peer-focus-visible:ring-2 peer-focus-visible:ring-link after:absolute after:left-[3px] after:top-[3px] after:h-3.5 after:w-3.5 after:rounded-full after:bg-surface after:transition-transform peer-checked:after:translate-x-4"
         />
       </label>
 
       {/* Role multi-select */}
       <div className="space-y-3">
-        <p className="text-xs text-gray-500">Role</p>
+        <p className="text-xs text-muted">Role</p>
 
         <div className="flex flex-wrap gap-2">
           {ROLES.map((role) => {
@@ -116,8 +116,8 @@ export function FilterBar({
 
             const className = `rounded-full border px-3 py-2 text-xs transition ${
               active
-                ? "border-[#DFFF70] bg-[#DFFF70] text-[#171717]"
-                : "border-[#E5E5E5] bg-white/70 text-[#2D2D2D] hover:border-[#C6F14B]"
+                ? "border-lime bg-lime text-ink"
+                : "border-border bg-surface/70 text-ink hover:border-lime"
             }`;
 
             return (
@@ -138,7 +138,7 @@ export function FilterBar({
       <div className="space-y-2">
         <label
           htmlFor="people-size"
-          className="block text-xs text-gray-500"
+          className="block text-xs text-muted"
         >
           Ideal team size
         </label>
@@ -148,7 +148,7 @@ export function FilterBar({
             id="people-size"
             name="size"
             defaultValue={filters.size}
-            className="w-full appearance-none rounded-xl border-0 bg-[#F1F1F5] px-3 py-3 text-sm text-[#272727] outline-none focus:ring-2 focus:ring-[#DFFF70]"
+            className="w-full appearance-none rounded-xl border-0 bg-surface-2 px-3 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-link"
           >
             <option value="">Any</option>
             {TEAM_SIZES.filter((size) =>
@@ -162,7 +162,7 @@ export function FilterBar({
 
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted"
           >
             ⌄
           </span>
@@ -173,7 +173,7 @@ export function FilterBar({
       <div className="space-y-2">
         <label
           htmlFor="people-year"
-          className="block text-xs text-gray-500"
+          className="block text-xs text-muted"
         >
           Year / grade
         </label>
@@ -183,7 +183,7 @@ export function FilterBar({
             id="people-year"
             name="year"
             defaultValue={filters.year}
-            className="w-full appearance-none rounded-xl border-0 bg-[#F1F1F5] px-3 py-3 text-sm text-[#272727] outline-none focus:ring-2 focus:ring-[#DFFF70]"
+            className="w-full appearance-none rounded-xl border-0 bg-surface-2 px-3 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-link"
           >
             <option value="">Any</option>
             {USC_YEARS.map((year) => (
@@ -195,7 +195,7 @@ export function FilterBar({
 
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted"
           >
             ⌄
           </span>
