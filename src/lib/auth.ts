@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
-import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
+import { connection } from "next/server";
 import { isOrganizer } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -11,10 +11,9 @@ export type CurrentUser = { id: string; email: string };
 /** The signed-in user, verified from the session JWT. Deduped per request. */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   if (!isSupabaseConfigured) return null;
-
-  // getClaims() reads Date.now() to check token expiry; mark this as
-  // request-time work so Next doesn't try to prerender it.
+  // The auth client reads the clock, so opt out of prerendering before touching it.
   await connection();
+
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
