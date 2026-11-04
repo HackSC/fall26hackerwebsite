@@ -230,7 +230,7 @@ async function PeopleResults({
     params.role
   );
 
-  const [{ profiles, error }, myProfile] = demoMode
+  const [{ profiles: found, error }, myProfile] = demoMode
     ? ([
         {
           profiles: filterDemoProfiles(
@@ -249,6 +249,9 @@ async function PeopleResults({
         ),
         getProfile(user.id),
       ]);
+
+  // You're searching for other people, so leave yourself out.
+  const profiles = found.filter((p) => p.id !== user.id);
 
   return (
     <div className="min-h-[calc(100vh-6rem)] pb-12">
@@ -326,10 +329,7 @@ async function PeopleResults({
                   key={p.id}
                   className="min-w-0"
                 >
-                  <ProfileCard
-                    profile={p}
-                    isMe={p.id === user.id}
-                  />
+                  <ProfileCard profile={p} />
                 </li>
               ))}
             </ul>

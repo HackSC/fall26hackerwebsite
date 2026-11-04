@@ -88,11 +88,9 @@ function ContactRow({
 
 export function ProfileDetailModal({
   profile: p,
-  isMe,
   card = false,
 }: {
   profile: DirectoryProfile;
-  isMe: boolean;
   card?: boolean;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -144,7 +142,11 @@ export function ProfileDetailModal({
 
             <p className="mt-3 w-full truncate text-[13px] font-semibold leading-5">
               {p.name}
-              {isMe ? " (You)" : ""}
+            </p>
+
+            {/* Email tells apart people who share a name. */}
+            <p className="w-full truncate text-[11px] text-hint">
+              {p.email}
             </p>
 
             <p className="w-full truncate text-[11px] font-medium leading-4">
