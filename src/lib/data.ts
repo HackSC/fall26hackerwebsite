@@ -13,8 +13,10 @@ export type ScheduleResult = { events: EventRow[]; error: string | null };
 export async function getSchedule(): Promise<ScheduleResult> {
   "use cache";
   cacheTag("events");
-  // Organizers edit events in the dashboard; show changes within ~30s.
-  cacheLife({ stale: 30, revalidate: 30, expire: 3600 });
+  // /admin edits call updateTag("events") and show immediately; edits made
+  // straight in Supabase reach the server within ~30s. stale must stay at
+  // 5 minutes or more, or the schedule drops out of the prefetched App Shell.
+  cacheLife({ stale: 300, revalidate: 30, expire: 3600 });
 
   if (!isSupabaseConfigured) return { events: [], error: null };
 
